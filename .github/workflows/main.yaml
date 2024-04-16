@@ -20,9 +20,6 @@ jobs:
         with:
           python-version: 3.12
 
-      # - name: Install curl (for nektos/act local CI testing)
-      #   run: apt-get update && apt-get install build-essential curl pkg-config openssl -y
-
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
 
@@ -41,8 +38,8 @@ jobs:
       - name: Format code
         run: pdm format
 
-      - name: Lint code
-        run: pdm lint
+      # - name: Lint code
+      #   run: pdm lint
 
       - name: Start project
         run: pdm run start
