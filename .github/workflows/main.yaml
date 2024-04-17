@@ -46,3 +46,6 @@ jobs:
 
       - name: Run Tests
         run: pdm test
+        env:
+          EMAIL: ${{ secrets.GRADESCOPE_CI_STUDENT_EMAIL }}
+          PASSWORD: ${{ secrets.GRADESCOPE_CI_STUDENT_PASSWORD }}
