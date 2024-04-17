@@ -1,13 +1,17 @@
 import requests
+import os
+from dotenv import load_dotenv
 
 from sylveon._classes._login_helpers import (
     login_set_session_cookies,
     get_auth_token_init_gradescope_session,
 )
 
-#TODO create a test account
-TEST_EMAIL = "email"
-TEST_PASSWORD = "password"
+# load .env file
+load_dotenv()
+
+TEST_EMAIL = os.getenv("EMAIL")
+TEST_PASSWORD = os.getenv("PASSWORD")
 FALSE_PASSWORD = "notthepassword"
 
 
