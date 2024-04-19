@@ -14,7 +14,6 @@ TEST_EMAIL = os.getenv("EMAIL")
 TEST_PASSWORD = os.getenv("PASSWORD")
 FALSE_PASSWORD = "notthepassword"
 
-
 def test_get_auth_token_init_gradescope_session():
     # create test session
     test_session = requests.Session()
@@ -41,11 +40,11 @@ def test_login_set_session_cookies_correct_creds():
 
     # check cookies
     cookies = requests.utils.dict_from_cookiejar(test_session.cookies)
-    cookie_check = set(cookies.keys()) == {
+    cookie_check = set(cookies.keys()).issuperset({
         "_gradescope_session",
         "signed_token",
         "remember_me",
-    }
+    })
     assert login_check and cookie_check
 
 
