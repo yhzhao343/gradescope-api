@@ -6,6 +6,8 @@ from sylveon._classes._login_helpers import (
     login_set_session_cookies,
 )
 
+from sylveon._classes._account import Account
+
 
 class GSConnection:
 
@@ -24,7 +26,6 @@ class GSConnection:
         )
         if login_success:
             self.logged_in = True
-            # TODO
-            # self.account = Account Class
+            self.account = Account(self.session)
         else:
             raise ValueError("Invalid credentials.")
