@@ -44,5 +44,13 @@ def login_set_session_cookies(
         len(login_resp.history) != 0
         and login_resp.history[0].status_code == requests.codes.found
     ):
+        # update headers with csrf token
+        # grab x-csrf-token
+        soup = BeautifulSoup(login_resp.text, "lxml")
+        csrf_token = soup.select_one('meta[name="csrf-token"]')["content"]
+
+        # update session headers
+        session.cookies.update(login_resp.cookies)
+        session.headers.update({"X-CSRF-Token": csrf_token})
         return True
     return False
