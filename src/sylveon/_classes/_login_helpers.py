@@ -46,7 +46,7 @@ def login_set_session_cookies(
     ):
         # update headers with csrf token
         # grab x-csrf-token
-        soup = BeautifulSoup(login_resp.text, "lxml")
+        soup = BeautifulSoup(login_resp.text, "html.parser")
         csrf_token = soup.select_one('meta[name="csrf-token"]')["content"]
 
         # update session headers
