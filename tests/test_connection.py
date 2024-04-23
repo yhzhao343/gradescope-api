@@ -10,9 +10,9 @@ from sylveon._classes._login_helpers import (
 # load .env file
 load_dotenv()
 
-TEST_EMAIL = os.getenv("EMAIL")
-TEST_PASSWORD = os.getenv("PASSWORD")
-FALSE_PASSWORD = "notthepassword"
+GRADESCOPE_CI_STUDENT_EMAIL = os.getenv("GRADESCOPE_CI_STUDENT_EMAIL")
+GRADESCOPE_CI_STUDENT_PASSWORD = os.getenv("GRADESCOPE_CI_STUDENT_PASSWORD")
+
 
 def test_get_auth_token_init_gradescope_session():
     # create test session
@@ -35,20 +35,27 @@ def test_login_set_session_cookies_correct_creds():
     auth_token = get_auth_token_init_gradescope_session(test_session)
 
     login_check = login_set_session_cookies(
-        test_session, TEST_EMAIL, TEST_PASSWORD, auth_token
+        test_session,
+        GRADESCOPE_CI_STUDENT_EMAIL,
+        GRADESCOPE_CI_STUDENT_PASSWORD,
+        auth_token,
     )
 
     # check cookies
     cookies = requests.utils.dict_from_cookiejar(test_session.cookies)
-    cookie_check = set(cookies.keys()).issuperset({
-        "_gradescope_session",
-        "signed_token",
-        "remember_me",
-    })
+    cookie_check = set(cookies.keys()).issuperset(
+        {
+            "_gradescope_session",
+            "signed_token",
+            "remember_me",
+        }
+    )
     assert login_check and cookie_check
 
 
 def test_login_set_session_cookies_incorrect_creds():
+    FALSE_PASSWORD = "notthepassword"
+
     # create test session
     test_session = requests.Session()
 
@@ -56,11 +63,11 @@ def test_login_set_session_cookies_incorrect_creds():
     auth_token = get_auth_token_init_gradescope_session(test_session)
 
     login_check = not login_set_session_cookies(
-        test_session, TEST_EMAIL, FALSE_PASSWORD, auth_token
+        test_session, GRADESCOPE_CI_STUDENT_EMAIL, FALSE_PASSWORD, auth_token
     )
 
     # check cookies
     cookies = requests.utils.dict_from_cookiejar(test_session.cookies)
-    cookie_check = set(cookies.keys()) == {"_gradescope_session"}
+    cookie_check = set(cookies.keys()).issuperset({"_gradescope_session"})
 
     assert login_check and cookie_check

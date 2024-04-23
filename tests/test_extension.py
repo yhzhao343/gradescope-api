@@ -14,8 +14,10 @@ from sylveon._classes._extensions import get_extensions, update_student_extensio
 # load .env file
 load_dotenv()
 
-TEST_EMAIL = os.getenv("EMAIL")
-TEST_PASSWORD = os.getenv("PASSWORD")
+GRADESCOPE_CI_STUDENT_EMAIL = os.getenv("GRADESCOPE_CI_STUDENT_EMAIL")
+GRADESCOPE_CI_STUDENT_PASSWORD = os.getenv("GRADESCOPE_CI_STUDENT_PASSWORD")
+GRADESCOPE_CI_INSTRUCTOR_EMAIL = os.getenv("GRADESCOPE_CI_INSTRUCTOR_EMAIL")
+GRADESCOPE_CI_INSTRUCTOR_PASSWORD = os.getenv("GRADESCOPE_CI_INSTRUCTOR_PASSWORD")
 
 
 @pytest.mark.skip("Not implemented")
@@ -40,7 +42,10 @@ def test_valid_change_extension():
     # assuming test_get_auth_token_init_gradescope_session works
     auth_token = get_auth_token_init_gradescope_session(test_session)
     login_check = login_set_session_cookies(
-        test_session, TEST_EMAIL, TEST_PASSWORD, auth_token
+        test_session,
+        GRADESCOPE_CI_INSTRUCTOR_EMAIL,
+        GRADESCOPE_CI_INSTRUCTOR_PASSWORD,
+        auth_token,
     )
 
     course_id = "753413"
@@ -61,6 +66,7 @@ def test_valid_change_extension():
     )
     assert result
 
+
 def test_invalid_change_extension():
     """Test invalid extension dates for a student."""
     # create test session
@@ -69,7 +75,10 @@ def test_invalid_change_extension():
     # assuming test_get_auth_token_init_gradescope_session works
     auth_token = get_auth_token_init_gradescope_session(test_session)
     login_check = login_set_session_cookies(
-        test_session, TEST_EMAIL, TEST_PASSWORD, auth_token
+        test_session,
+        GRADESCOPE_CI_INSTRUCTOR_EMAIL,
+        GRADESCOPE_CI_INSTRUCTOR_PASSWORD,
+        auth_token,
     )
 
     course_id = "753413"
@@ -79,7 +88,10 @@ def test_invalid_change_extension():
     due_date = release_date + timedelta(days=-1)
     late_due_date = due_date + timedelta(days=-1)
 
-    with pytest.raises(ValueError, match="Dates must be in order: release_date <= due_date <= late_due_date"):
+    with pytest.raises(
+        ValueError,
+        match="Dates must be in order: release_date <= due_date <= late_due_date",
+    ):
         update_student_extension(
             test_session,
             course_id,
@@ -89,6 +101,7 @@ def test_invalid_change_extension():
             due_date,
             late_due_date,
         )
+
 
 # Todo:
 # invalid user id?
