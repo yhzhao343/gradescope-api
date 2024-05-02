@@ -1,9 +1,13 @@
-"""
-Functions for getting, adding, and changing student extensions on assignments.
-get_extensions()
-update_student_due_date()
-update_student_late_due_date()
-update_student_release_date()
+"""Functions for getting, adding, and changing student extensions on assignments.
+
+This module provides functions for interacting with the Gradescope API to manage student extensions
+on assignments. It includes functions to get all extensions for an assignment, update the extension
+for a specific student, and remove a student's extension.
+
+The main functions in this module are:
+- `get_extensions`: Retrieves all extensions for a specific assignment.
+- `update_student_extension`: Updates the extension for a specific student on an assignment.
+- `remove_student_extension`: Removes the extension for a specific student.
 """
 
 import requests
@@ -26,8 +30,7 @@ class Extension:
 def get_extensions(
     session: requests.Session, course_id: str, assignment_id: str
 ) -> dict:
-    """
-    Get all extensions for an assignment.
+    """Get all extensions for an assignment.
 
     Args:
         session (requests.Session): The session object used for making HTTP requests.
@@ -36,20 +39,28 @@ def get_extensions(
 
     Returns:
         dict: A dictionary containing the extensions, where the keys are user IDs and the values are Extension objects.
+        For example:
+
+        {
+            "123456": Extension(...),
+            "654321": Extension(...)
+        }
 
     Raises:
-        Exception: If the request to get extensions fails.
+        RuntimeError: If the request to get extensions fails.
 
     """
     GS_EXTENSIONS_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/extensions"
-    GS_EXTENSIONS_TABLE_CSS_CLASSES = "table js-overridesTable"  # Table
+    GS_EXTENSIONS_TABLE_CSS_CLASSES = (
+        "table js-overridesTable"  # Table containing extensions
+    )
 
     # get the extensions from the page
     response = session.get(GS_EXTENSIONS_ENDPOINT)
 
     # check if the request was successful
     if response.status_code != 200:
-        raise Exception(
+        raise RuntimeError(
             f"Failed to get extensions for assignment {assignment_id}. Status code: {response.status_code}"
         )
 
@@ -59,17 +70,12 @@ def get_extensions(
     extensions_table = extensions_soup.find(
         "table", class_=GS_EXTENSIONS_TABLE_CSS_CLASSES
     )
-    table_head = extensions_table.find("thead").find("tr")
-    for heading in table_head.find_all("th"):
-        print(f"'{heading.text}'")
 
     extensions = {}
 
     table_body = extensions_table.find("tbody")
     for row in table_body.find_all("tr"):
-        """
-        '{"inheritedOverride":false,"deletePath":"/courses/753413/assignments/4330410/extensions/919001","hideEmailAddresses":false,"override":{"user_id":6515875,"settings":{"due_date":{"type":"absolute","value":"2024-04-15T20:00"},"release_date":{"type":"absolute","value":"2024-04-14T20:00"},"hard_due_date":{"type":"absolute","value":"2024-04-16T20:00"}}},"path":"/courses/753413/assignments/4330410/extensions","resourceName":"test","studentName":"Gradescope API - CI Student Testing Account","studentSections":null,"userId":6515875,"fallbackSubmissionWindow":{"release_date":"2024-04-10T17:00","due_date":"2024-04-30T18:00","hard_due_date":null,"time_limit":null,"visible":true},"timezone":{"abbr":"EDT","zone":"Eastern Time (US \\u0026 Canada)","identifier":"America/New_York"},"assignment":{"type":"ProgrammingAssignment","time_limit":null,"release_date":"2024-04-10T17:00","due_date":"2024-04-30T18:00","hard_due_date":null,"visible":true}}'
-        """
+        # find relevant data
         user_properties = row.find("div", {"data-react-class": "EditExtension"}).get(
             "data-react-props"
         )
@@ -120,7 +126,6 @@ def get_extensions(
         )
         extensions[user_id] = extension
 
-    # return the extensions
     return extensions
 
 
@@ -133,7 +138,7 @@ def update_student_extension(
     due_date: datetime.datetime | None = None,
     late_due_date: datetime.datetime | None = None,
 ) -> bool:
-    """Updates the extension for a student on an assignment
+    """Updates the extension for a student on an assignment.
 
     If the user currently has an extension, this will overwrite their
     current extension. If the user does not have an extension, this
@@ -149,13 +154,20 @@ def update_student_extension(
         before the normal due date.
 
     Args:
-        session: The session to use for the request
-        course_id: The course id
-        assignment_id: The assignment id
-        user_id: The user id
-        release_date: The release date. If None, it will not be updated
-        due_date: The due date. If None, it will not be updated
-        late_due_date: The late due date. If None, it will not be updated
+        session (requests.Session): The session to use for the request
+        course_id (str): The course id
+        assignment_id (str): The assignment id
+        user_id (str): The user id
+        release_date (datetime.datetime | None): The release date. If None, it will not be updated
+        due_date (datetime.datetime | None): The due date. If None, it will not be updated
+        late_due_date (datetime.datetime | None): The late due date. If None, it will not be updated
+
+    Returns:
+        bool: True if the extension was successfully updated, False otherwise
+
+    Raises:
+        ValueError: If no dates are provided
+        ValueError: If the dates are not in order
     """
 
     # Check if at least 1 date is set
@@ -204,5 +216,8 @@ def update_student_extension(
     return resp.status_code == 200
 
 
-def remove_student_extension():
-    pass
+def remove_student_extension(
+    session: requests.Session,
+    delete_path: str,
+) -> bool:
+    raise NotImplementedError("Not implemented yet")
