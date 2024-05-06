@@ -14,6 +14,7 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "requests>=2.31.0",
     "python-dotenv>=1.0.1",
+    "fastapi>=0.111.0",
 ]
 requires-python = ">=3.12"
 readme = "README.md"
@@ -28,7 +29,12 @@ build-backend = "pdm.backend"
 distribution = true
 
 [tool.pdm.dev-dependencies]
-dev = ["black>=24.1.1", "mypy>=1.8.0"]
+dev = [
+    "black>=24.1.1",
+    "mypy>=1.8.0",
+    "pre-commit>=3.7.0",
+    "ruff>=0.4.3",
+]
 
 [tool.pdm.scripts]
 start = "python -m sylveon"
@@ -36,3 +42,4 @@ test = "pytest tests"
 lint = "mypy src tests"
 format = "black src tests"
 format-test = "black --check src tests"
+export = "pdm export -f requirements -o requirements.txt --without-hashes"
