@@ -1,8 +1,5 @@
-import requests
 import os
 from dotenv import load_dotenv
-import pytest
-from datetime import datetime, timedelta
 
 from sylveon._classes._connection import GSConnection
 
@@ -36,12 +33,12 @@ def new_session(account_type="student"):
     return connection.session
 
 
-def test_upload():
+def test_valid_upload():
     # create test session
     test_session = new_session("student")
 
     course_id = "753413"
-    assignment_id = "4330410"
+    assignment_id = "4455030"
 
     with (
         open("tests/upload_files/text_file.txt", "rb") as text_file,
@@ -49,13 +46,39 @@ def test_upload():
         open("tests/upload_files/python_file.py", "rb") as python_file,
     ):
 
-        extensions = upload_assignment(
+        submission_link = upload_assignment(
             test_session,
             course_id,
             assignment_id,
             text_file,
             markdown_file,
             python_file,
+            leaderboard_name="test",
         )
 
-    assert extensions
+    assert submission_link is not None
+
+
+def test_invalid_upload():
+    # create test session
+    test_session = new_session("student")
+
+    course_id = "753413"
+    invalid_assignment_id = "1111111"
+
+    with (
+        open("tests/upload_files/text_file.txt", "rb") as text_file,
+        open("tests/upload_files/markdown_file.md", "rb") as markdown_file,
+        open("tests/upload_files/python_file.py", "rb") as python_file,
+    ):
+
+        submission_link = upload_assignment(
+            test_session,
+            course_id,
+            invalid_assignment_id,
+            text_file,
+            markdown_file,
+            python_file,
+        )
+
+    assert submission_link is None
