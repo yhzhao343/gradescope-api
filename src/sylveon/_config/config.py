@@ -33,6 +33,7 @@ class CourseModel(BaseModel):
     course_name: str
     course_semester: SemesterModel
     course_year: int
+    num_grades_published: int
 
 
 class UserModel(BaseModel):
