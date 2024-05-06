@@ -4,14 +4,14 @@ from dotenv import load_dotenv
 import pytest
 from datetime import datetime, timedelta
 
-from sylveon._classes._login_helpers import (
+from gradescopeapi._classes._login_helpers import (
     login_set_session_cookies,
     get_auth_token_init_gradescope_session,
 )
 
-from sylveon._classes._connection import GSConnection
+from gradescopeapi._classes._connection import GSConnection
 
-from sylveon._classes._extensions import get_extensions, update_student_extension
+from gradescopeapi._classes._extensions import get_extensions, update_student_extension
 
 # load .env file
 load_dotenv()
@@ -129,6 +129,7 @@ def test_invalid_change_extension():
             late_due_date,
         )
 
+
 def test_invalid_user_id():
     """Test extension handling with an invalid user ID."""
     test_session = new_session("instructor")
@@ -150,6 +151,7 @@ def test_invalid_user_id():
     # Check the function returns False for non-existent user ID
     assert not result, "Function should indicate failure when given an invalid user ID"
 
+
 def test_invalid_assignment_id():
     """Test extension handling with an invalid assignment ID."""
     test_session = new_session("instructor")
@@ -159,6 +161,7 @@ def test_invalid_assignment_id():
     # Attempt to fetch extensions with an invalid assignment ID
     with pytest.raises(RuntimeError, match="Failed to get extensions"):
         get_extensions(test_session, course_id, invalid_assignment_id)
+
 
 def test_invalid_course_id():
     """Test extension handling with an invalid course ID."""

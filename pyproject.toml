@@ -1,7 +1,7 @@
 [project]
-name = "Sylveon"
+name = "GradescopeAPI"
 version = "1.0.0"
-description = "Base Template for Python Open Source projects"
+description = "Library for programmatically interacting with Gradescope."
 authors = [
     { name = "Susmitha Kusuma", email = "sk10689@nyu.edu" },
     { name = "Berry Liu", email = "bl3056@nyu.edu" },

@@ -2,7 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
-from sylveon._classes._login_helpers import (
+from gradescopeapi._classes._login_helpers import (
     login_set_session_cookies,
     get_auth_token_init_gradescope_session,
 )
@@ -70,4 +70,4 @@ def test_login_set_session_cookies_incorrect_creds():
     cookies = requests.utils.dict_from_cookiejar(test_session.cookies)
     cookie_check = set(cookies.keys()).issuperset({"_gradescope_session"})
 
-    assert login_check and cookie_check   
+    assert login_check and cookie_check

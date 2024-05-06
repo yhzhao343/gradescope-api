@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from sylveon._classes._courses import Course
+from gradescopeapi._classes._courses import Course
 
 
 def scrape_courses_info(

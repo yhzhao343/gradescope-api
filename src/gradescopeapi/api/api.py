@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from sylveon._config.config import (
+from gradescopeapi._config.config import (
     SessionModel,
     ConnectionModel,
     TokenModel,
