@@ -3,3 +3,4 @@ pytest==8.0.0
 mypy==1.8.0
 bs4
 requests
+fastapi
