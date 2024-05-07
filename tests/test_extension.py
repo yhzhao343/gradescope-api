@@ -1,79 +1,26 @@
 import requests
-import os
-from dotenv import load_dotenv
 import pytest
 from datetime import datetime, timedelta
 
-from gradescopeapi._classes._login_helpers import (
-    login_set_session_cookies,
-    get_auth_token_init_gradescope_session,
-)
-
-from gradescopeapi._classes._connection import GSConnection
-
 from gradescopeapi._classes._extensions import get_extensions, update_student_extension
 
-# load .env file
-load_dotenv()
 
-GRADESCOPE_CI_STUDENT_EMAIL = os.getenv("GRADESCOPE_CI_STUDENT_EMAIL")
-GRADESCOPE_CI_STUDENT_PASSWORD = os.getenv("GRADESCOPE_CI_STUDENT_PASSWORD")
-GRADESCOPE_CI_INSTRUCTOR_EMAIL = os.getenv("GRADESCOPE_CI_INSTRUCTOR_EMAIL")
-GRADESCOPE_CI_INSTRUCTOR_PASSWORD = os.getenv("GRADESCOPE_CI_INSTRUCTOR_PASSWORD")
-
-
-def new_session(account_type="student"):
-    """Creates and returns a session for testing"""
-    connection = GSConnection()
-
-    match account_type.lower():
-        case "student":
-            connection.login(
-                GRADESCOPE_CI_STUDENT_EMAIL, GRADESCOPE_CI_STUDENT_PASSWORD
-            )
-        case "instructor":
-            connection.login(
-                GRADESCOPE_CI_INSTRUCTOR_EMAIL, GRADESCOPE_CI_INSTRUCTOR_PASSWORD
-            )
-        case _:
-            raise ValueError("Invalid account type: must be 'student' or 'instructor'")
-
-    return connection.session
-
-
-# @pytest.mark.skip("Not implemented")
-def test_get_extensions():
+def test_get_extensions(create_session):
+    """Test fetching extensions for an assignment."""
     # create test session
-    test_session = requests.Session()
-
-    # assuming test_get_auth_token_init_gradescope_session works
-    auth_token = get_auth_token_init_gradescope_session(test_session)
-    login_check = login_set_session_cookies(
-        test_session,
-        GRADESCOPE_CI_INSTRUCTOR_EMAIL,
-        GRADESCOPE_CI_INSTRUCTOR_PASSWORD,
-        auth_token,
-    )
+    test_session = create_session("instructor")
 
     course_id = "753413"
     assignment_id = "4330410"
+
     extensions = get_extensions(test_session, course_id, assignment_id)
-    print(extensions)
+    assert len(extensions) > 0, f"Got 0 extensions for course {course_id} and assignment {assignment_id}"
 
 
-def test_valid_change_extension():
-    """Test valid extension for a student."""
+def test_valid_change_extension(create_session):
+    """Test granting a valid extension for a student."""
     # create test session
-    test_session = requests.Session()
-
-    # assuming test_get_auth_token_init_gradescope_session works
-    auth_token = get_auth_token_init_gradescope_session(test_session)
-    login_check = login_set_session_cookies(
-        test_session,
-        GRADESCOPE_CI_INSTRUCTOR_EMAIL,
-        GRADESCOPE_CI_INSTRUCTOR_PASSWORD,
-        auth_token,
-    )
+    test_session = create_session("instructor")
 
     course_id = "753413"
     assignment_id = "4330410"
@@ -91,22 +38,13 @@ def test_valid_change_extension():
         due_date,
         late_due_date,
     )
-    assert result
+    assert result, "Failed to update student extension"
 
 
-def test_invalid_change_extension():
-    """Test invalid extension dates for a student."""
+def test_invalid_change_extension(create_session):
+    """Test granting an invalid extension for a student due to invalid dates."""
     # create test session
-    test_session = requests.Session()
-
-    # assuming test_get_auth_token_init_gradescope_session works
-    auth_token = get_auth_token_init_gradescope_session(test_session)
-    login_check = login_set_session_cookies(
-        test_session,
-        GRADESCOPE_CI_INSTRUCTOR_EMAIL,
-        GRADESCOPE_CI_INSTRUCTOR_PASSWORD,
-        auth_token,
-    )
+    test_session = create_session("instructor")
 
     course_id = "753413"
     assignment_id = "4330410"
@@ -130,9 +68,10 @@ def test_invalid_change_extension():
         )
 
 
-def test_invalid_user_id():
-    """Test extension handling with an invalid user ID."""
-    test_session = new_session("instructor")
+def test_invalid_user_id(create_session):
+    """Test granting an invalid extension for a student due to invalid user ID."""
+    test_session = create_session("instructor")
+
     course_id = "753413"
     assignment_id = "4330410"
     invalid_user_id = "9999999"  # Assuming this is an invalid ID
@@ -152,9 +91,9 @@ def test_invalid_user_id():
     assert not result, "Function should indicate failure when given an invalid user ID"
 
 
-def test_invalid_assignment_id():
+def test_invalid_assignment_id(create_session):
     """Test extension handling with an invalid assignment ID."""
-    test_session = new_session("instructor")
+    test_session = create_session("instructor")
     course_id = "753413"
     invalid_assignment_id = "9999999"
 
@@ -163,9 +102,9 @@ def test_invalid_assignment_id():
         get_extensions(test_session, course_id, invalid_assignment_id)
 
 
-def test_invalid_course_id():
+def test_invalid_course_id(create_session):
     """Test extension handling with an invalid course ID."""
-    test_session = new_session("instructor")
+    test_session = create_session("instructor")
     invalid_course_id = "9999999"
 
     # Attempt to fetch or modify extensions with an invalid course ID
