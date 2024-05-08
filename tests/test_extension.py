@@ -13,7 +13,9 @@ def test_get_extensions(create_session):
     assignment_id = "4330410"
 
     extensions = get_extensions(test_session, course_id, assignment_id)
-    assert len(extensions) > 0, f"Got 0 extensions for course {course_id} and assignment {assignment_id}"
+    assert (
+        len(extensions) > 0
+    ), f"Got 0 extensions for course {course_id} and assignment {assignment_id}"
 
 
 def test_valid_change_extension(create_session):
