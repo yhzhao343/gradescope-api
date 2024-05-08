@@ -1,45 +1,56 @@
 [project]
-name = "GradescopeAPI"
+name = "gradescopeapi"
 version = "1.0.0"
 description = "Library for programmatically interacting with Gradescope."
-authors = [
-    { name = "Susmitha Kusuma", email = "sk10689@nyu.edu" },
-    { name = "Berry Liu", email = "bl3056@nyu.edu" },
-    { name = "Margaret Jagger", email = "mj3102@nyu.edu" },
-    { name = "Calvin Tian", email = "calvin.tian@nyu.edu" },
-    { name = "Kevin Zheng", email = "kz1252@nyu.edu" },
-]
-dependencies = [
-    "pytest>=8.0.0",
-    "beautifulsoup4>=4.12.3",
-    "requests>=2.31.0",
-    "python-dotenv>=1.0.1",
-    "fastapi>=0.111.0",
-]
-requires-python = ">=3.12"
 readme = "README.md"
 license = { text = "MIT" }
+maintainers = [
+    { name = "Calvin Tian" },
+]
+authors = [
+    { name = "Calvin Tian" },
+    { name = "Susmitha Kusuma" },
+    { name = "Berry Liu" },
+    { name = "Margaret Jagger" },
+    { name = "Kevin Zheng" },
+]
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "beautifulsoup4>=4.12.3",
+  "fastapi>=0.111",
+  "pytest>=8",
+  "python-dotenv>=1.0.1",
+  "requests>=2.31",
+]
+[project.urls]
+Homepage = "https://github.com/nyuoss/gradescope-api"
+Issues = "https://github.com/nyuoss/gradescope-api/issues"
+Repository = "https://github.com/nyuoss/gradescope-api"
 
 [build-system]
-requires = ["pdm-backend"]
 build-backend = "pdm.backend"
-
+requires = [
+  "pdm-backend",
+]
 
 [tool.pdm]
 distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "black>=24.1.1",
     "mypy>=1.8.0",
     "pre-commit>=3.7.0",
     "ruff>=0.4.3",
 ]
 
 [tool.pdm.scripts]
-start = "python -m sylveon"
+start = "python -m gradescopeapi"
 test = "pytest tests"
-lint = "mypy src tests"
-format = "black src tests"
-format-test = "black --check src tests"
+lint = "ruff check src tests"
+lint-fix = "ruff check --fix src tests"
+format = "ruff format src tests"
+format-test = "ruff format --check src tests"
 export = "pdm export -f requirements -o requirements.txt --without-hashes"
