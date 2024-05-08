@@ -14,3 +14,8 @@ repos:
         # command arguments, e.g.:
         args: ['-o', 'requirements.txt', '--without-hashes']
         files: ^pdm.lock$
+# format pyproject.toml file
+- repo: https://github.com/tox-dev/pyproject-fmt
+  rev: "1.0.0"
+  hooks:
+    - id: pyproject-fmt
