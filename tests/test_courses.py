@@ -2,7 +2,9 @@ import os
 from dotenv import load_dotenv
 import pytest
 
+from requests.exceptions import RequestException
 from sylveon._classes._connection import GSConnection
+from sylveon._classes._courses import Course
 
 # load .env file
 load_dotenv()
