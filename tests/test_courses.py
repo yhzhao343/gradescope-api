@@ -16,7 +16,6 @@ GRADESCOPE_CI_INSTRUCTOR_PASSWORD = os.getenv("GRADESCOPE_CI_INSTRUCTOR_PASSWORD
 
 
 def test_get_courses_student():
-
     # create connection object
     conn_student = GSConnection()
 
@@ -31,7 +30,6 @@ def test_get_courses_student():
 
 
 def test_get_courses_instructor():
-
     # create connection object
     conn_instr = GSConnection()
 

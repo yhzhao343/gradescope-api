@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import requests
 
 from gradescopeapi._classes._scrape_helpers import scrape_courses_info
 

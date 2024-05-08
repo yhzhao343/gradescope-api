@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import requests
 
 from gradescopeapi._classes._login_helpers import (
