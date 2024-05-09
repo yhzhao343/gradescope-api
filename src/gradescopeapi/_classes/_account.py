@@ -148,6 +148,7 @@ class Account:
         NOTE:
         1. Image submissions not supports, need to find an endpoint to retrieve image pdfs
         2. Not recommended for use, since this makes a GET request for every submission -> very slow!
+        3. so far only accessible for teachers, not for students to get submissions to an assignment
         """
         ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
