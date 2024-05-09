@@ -1,16 +1,14 @@
-from bs4 import BeautifulSoup
 import requests
 
-from sylveon._classes._login_helpers import (
+from gradescopeapi._classes._login_helpers import (
     get_auth_token_init_gradescope_session,
     login_set_session_cookies,
 )
 
-from sylveon._classes._account import Account
+from gradescopeapi._classes._account import Account
 
 
 class GSConnection:
-
     def __init__(self):
         self.session = requests.Session()
         self.logged_in = False

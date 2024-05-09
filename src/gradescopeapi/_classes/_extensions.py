@@ -48,8 +48,8 @@ def get_extensions(
 
     Raises:
         RuntimeError: If the request to get extensions fails.
-
     """
+
     GS_EXTENSIONS_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/extensions"
     GS_EXTENSIONS_TABLE_CSS_CLASSES = (
         "table js-overridesTable"  # Table containing extensions

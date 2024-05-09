@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-from sylveon._classes._connection import GSConnection
+from gradescopeapi._classes._connection import GSConnection
 
-from sylveon._classes._upload import upload_assignment
+from gradescopeapi._classes._upload import upload_assignment
 
 # load .env file
 load_dotenv()
@@ -45,7 +45,6 @@ def test_valid_upload():
         open("tests/upload_files/markdown_file.md", "rb") as markdown_file,
         open("tests/upload_files/python_file.py", "rb") as python_file,
     ):
-
         submission_link = upload_assignment(
             test_session,
             course_id,
@@ -71,7 +70,6 @@ def test_invalid_upload():
         open("tests/upload_files/markdown_file.md", "rb") as markdown_file,
         open("tests/upload_files/python_file.py", "rb") as python_file,
     ):
-
         submission_link = upload_assignment(
             test_session,
             course_id,

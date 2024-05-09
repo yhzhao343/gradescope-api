@@ -1,10 +1,7 @@
 import os
 from dotenv import load_dotenv
-import pytest
 
-from requests.exceptions import RequestException
-from sylveon._classes._connection import GSConnection
-from sylveon._classes._courses import Course
+from gradescopeapi._classes._connection import GSConnection
 
 # load .env file
 load_dotenv()
@@ -19,7 +16,6 @@ GRADESCOPE_CI_INSTRUCTOR_PASSWORD = os.getenv("GRADESCOPE_CI_INSTRUCTOR_PASSWORD
 
 
 def test_get_courses_student():
-
     # create connection object
     conn_student = GSConnection()
 
@@ -34,7 +30,6 @@ def test_get_courses_student():
 
 
 def test_get_courses_instructor():
-
     # create connection object
     conn_instr = GSConnection()
 

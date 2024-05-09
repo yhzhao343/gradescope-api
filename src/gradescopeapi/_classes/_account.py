@@ -1,11 +1,9 @@
 from bs4 import BeautifulSoup
-import requests
 
-from sylveon._classes._scrape_helpers import scrape_courses_info
+from gradescopeapi._classes._scrape_helpers import scrape_courses_info
 
 
 class Account:
-
     def __init__(self, session):
         self.session = session
 
