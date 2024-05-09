@@ -1,6 +1,12 @@
 from bs4 import BeautifulSoup
+from typing import List, Dict
 
 from gradescopeapi._classes._scrape_helpers import scrape_courses_info
+from gradescopeapi._classes._assignment_helpers import (
+    check_page_auth,
+    get_assignments_instructor_view,
+    get_assignments_student_view,
+)
 
 
 class Account:
@@ -70,3 +76,46 @@ class Account:
         courses["student"] = student_courses
 
         return courses
+    
+    def get_assignments(self, course_id: int) -> List[Dict[str, str]]:
+        """
+        Get a list of detailed assignment information for a course
+        Returns:
+            list: A list of dictionaries, where the keys are the assignment info name and
+            the values is the corresponding assignment information
+            Example:
+                [
+                   {
+                        'assignment_id': 'a_id',
+                        'name': 'a_name,
+                        'release_date': 'a_release_date',
+                        'due_date': 'a_due_date',
+                        'late_due_date': 'a_late_due_date',
+                        'submissions_status': 'a_status',
+                        'grade': 'a_grade',
+                        'max_grade': 'a_max_grade'
+                   }
+                ]
+        Raises:
+            Exceptions:
+            "One or more invalid parameters": if course_id or assignment_id is null or empty value
+            "You are not authorized to access this page.": if logged in user is unable to access submissions
+            "You must be logged in to access this page.": if no user is logged in
+        """
+        ACCOUNT_PAGE_ENDPOINT = "https://www.gradescope.com/courses"
+        course_endpoint = f"{ACCOUNT_PAGE_ENDPOINT}/{course_id}"
+        # check that course_id is valid (not empty)
+        if not course_id:
+            raise Exception("Invalid Course ID")
+        session = self.session
+        # scrape page
+        coursepage_resp = check_page_auth(session, course_endpoint)
+        coursepage_soup = BeautifulSoup(coursepage_resp.text, "html.parser")
+
+        # two different helper functions to parse assignment info
+        # webpage html structure differs based on if user if instructor or student
+        assignment_info_list = get_assignments_instructor_view(coursepage_soup)
+        if not assignment_info_list:
+            assignment_info_list = get_assignments_student_view(coursepage_soup)
+
+        return assignment_info_list
