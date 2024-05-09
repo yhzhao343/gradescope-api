@@ -6,7 +6,7 @@ Clone the repository. This project currently uses [PDM](https://pdm-project.org/
 
 ```bash
 # PDM
-pdm install -d
+pdm install
 ```
 
 ```bash
