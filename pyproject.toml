@@ -24,6 +24,7 @@ dependencies = [
   "pytest>=8",
   "python-dotenv>=1.0.1",
   "requests>=2.31",
+  "requests-toolbelt>=1",
 ]
 [project.urls]
 Homepage = "https://github.com/nyuoss/gradescope-api"

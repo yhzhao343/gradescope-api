@@ -71,4 +71,8 @@ def upload_assignment(
     # Note: Response status code is always 200 even if upload was unsuccessful (e.g. past the due date,
     # missing form fields, etc.). The response from the server either redirects to the submission page (url)
     # if successful, or redirects to the Course homepage if unsuccessful.
-    return None if response.url == GS_COURSE_ENDPOINT or response.url.endswith("submissions") else response.url
+    return (
+        None
+        if response.url == GS_COURSE_ENDPOINT or response.url.endswith("submissions")
+        else response.url
+    )

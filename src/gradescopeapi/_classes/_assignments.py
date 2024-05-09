@@ -2,7 +2,6 @@
 
 import requests
 from bs4 import BeautifulSoup
-from dataclasses import dataclass
 import datetime
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
