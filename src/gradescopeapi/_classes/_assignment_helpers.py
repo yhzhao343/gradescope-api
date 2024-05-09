@@ -120,3 +120,22 @@ def get_assignments_student_view(coursepage_soup):
         # Append the dictionary to the list
         assignment_info_list.append(assignment_info)
     return assignment_info_list
+
+
+def get_submission_files(session, course_id, assignment_id, submission_id):
+    ASSIGNMENT_ENDPOINT = (
+        f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+    )
+
+    file_info_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{submission_id}.json?content=react&only_keys[]=text_files&only_keys[]=file_comments"
+    file_info_resp = session.get(file_info_link)
+    if file_info_resp.status_code == requests.codes.ok:
+        file_info_json = json.loads(file_info_resp.text)
+        if file_info_json.get("text_files"):
+            aws_links = []
+            for file_data in file_info_json["text_files"]:
+                aws_links.append(file_data["file"]["url"])
+        else:
+            raise Exception("Image only submissions not yet supported")
+        # TODO add support for image questions
+    return aws_links

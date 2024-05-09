@@ -6,6 +6,7 @@ from gradescopeapi._classes._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
     get_assignments_student_view,
+    get_submission_files,
 )
 
 
@@ -119,3 +120,50 @@ class Account:
             assignment_info_list = get_assignments_student_view(coursepage_soup)
 
         return assignment_info_list
+    
+    def get_assignment_submissions(
+        self, course_id: str, assignment_id: str
+    ) -> Dict[str, List[str]]:
+        """
+        Get a list of dicts mapping AWS links for all submissions to each submission id
+        Returns:
+            dict: A dictionary of submissions, where the keys are the submission ids and the values are
+            a list of aws links to the submission pdf
+            For example:
+                {
+                    'submission_id': [
+                        'aws_link1.com',
+                        'aws_link2.com',
+                        ...
+                    ],
+                    ...
+                }
+        Raises:
+            Exceptions:
+                "One or more invalid parameters": if course_id or assignment_id is null or empty value
+                "You are not authorized to access this page.": if logged in user is unable to access submissions
+                "You must be logged in to access this page.": if no user is logged in
+                "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
+                "Image only submissions not yet supported": assignment is image submission only, which is not yet supported
+        NOTE:
+        1. Image submissions not supports, need to find an endpoint to retrieve image pdfs
+        2. Not recommended for use, since this makes a GET request for every submission -> very slow!
+        """
+        ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
+        if not course_id or not assignment_id:
+            raise Exception("One or more invalid parameters")
+        session = self.session
+        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
+        submissions_a_tags = submissions_soup.select("td.table--primaryLink a")
+        submission_ids = [
+            a_tag.attrs.get("href").split("/")[-1] for a_tag in submissions_a_tags
+        ]
+        submission_links = {}
+        for submission_id in submission_ids:  # doesn't support image submissions yet
+            aws_links = get_submission_files(
+                session, course_id, assignment_id, submission_id
+            )
+            submission_links[submission_id] = aws_links
+        return submission_links
