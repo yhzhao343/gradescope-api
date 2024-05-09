@@ -77,7 +77,7 @@ class Account:
         courses["student"] = student_courses
 
         return courses
-    
+
     def get_assignments(self, course_id: int) -> List[Dict[str, str]]:
         """
         Get a list of detailed assignment information for a course
@@ -120,7 +120,7 @@ class Account:
             assignment_info_list = get_assignments_student_view(coursepage_soup)
 
         return assignment_info_list
-    
+
     def get_assignment_submissions(
         self, course_id: str, assignment_id: str
     ) -> Dict[str, List[str]]:
@@ -168,3 +168,33 @@ class Account:
             )
             submission_links[submission_id] = aws_links
         return submission_links
+
+    def get_assignment_submission(self, student_email, course_id, assignment_id):
+        # so far only accessible for teachers, not for students to get their own submission
+        # get_assignment_submission(token, student_id, course_id, assignment_id)
+        # -> link(s) to download file or actual files themselves
+        # fetch submission id
+        ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
+        if not (student_email and course_id and assignment_id):
+            raise Exception("One or more invalid parameters")
+        session = self.session
+        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
+        td_with_email = submissions_soup.find(
+            "td", string=lambda s: student_email in str(s)
+        )
+        if td_with_email:
+            # grab submission from previous td
+            submission_td = td_with_email.find_previous_sibling()
+            # submission_td will have an anchor element as a child if there is a submission
+            a_element = submission_td.find("a")
+            if a_element:
+                submission_id = a_element.get("href").split("/")[-1]
+            else:
+                raise Exception("No submission found")
+        # call get_submission_files helper function
+        aws_links = get_submission_files(
+            session, course_id, assignment_id, submission_id
+        )
+        return aws_links
