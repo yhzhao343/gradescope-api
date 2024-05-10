@@ -32,6 +32,8 @@ To use the project you can install the package from PyPI using pip:
 pip install gradescopeapi
 ```
 
+For additional methods of installation, refer to the [install guide](docs/INSTALL.md)
+
 ## Usage
 
 The project is designed to be simple and easy to use. Below is an example of how to use the project to get a list of all courses for a user:
@@ -47,9 +49,9 @@ courses = connection.account.get_courses()
 
 More examples can be found in the [tests](tests/) directory.
 
-## Pull Requests / Issues
+## Testing
 
-For any potential issues and/or contributions related to the API, a template for issue and pull requests is provided for collaborative development.
+For information on how to run your own tests using gradescopeapi, refer to [TESTING.md](docs/TESTING.md)
 
 ## Contributing Guidelines
 
