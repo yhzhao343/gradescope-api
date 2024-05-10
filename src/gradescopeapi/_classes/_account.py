@@ -11,6 +11,7 @@ from gradescopeapi._classes._assignment_helpers import (
 )
 from gradescopeapi._classes._assignments import Assignment
 
+
 class Account:
     def __init__(self, session):
         self.session = session

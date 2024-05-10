@@ -18,6 +18,7 @@ class Assignment:
     grade: str
     max_grade: str
 
+
 def update_assignment_date(
     session: requests.Session,
     course_id: str,

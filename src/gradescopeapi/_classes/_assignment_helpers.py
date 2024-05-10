@@ -40,22 +40,34 @@ def get_assignments_instructor_view(coursepage_soup):
         # Extract information for each assignment
         for assignment in assignment_json["table_data"]:
             assignment_obj = Assignment(
-                assignment_id = assignment["url"].split("/")[-1],
-                name = assignment["title"],
-                release_date = assignment["submission_window"]["release_date"],
-                due_date = assignment["submission_window"]["due_date"],
-                late_due_date = assignment["submission_window"].get("hard_due_date"),
-                submissions_status = None,
-                grade = None,
-                max_grade = str(float(assignment["total_points"])),
+                assignment_id=assignment["url"].split("/")[-1],
+                name=assignment["title"],
+                release_date=assignment["submission_window"]["release_date"],
+                due_date=assignment["submission_window"]["due_date"],
+                late_due_date=assignment["submission_window"].get("hard_due_date"),
+                submissions_status=None,
+                grade=None,
+                max_grade=str(float(assignment["total_points"])),
             )
 
             # convert to datetime objects
-            assignment_obj.release_date = datetime.fromisoformat(assignment_obj.release_date) if assignment_obj.release_date else assignment_obj.release_date
-            
-            assignment_obj.due_date = datetime.fromisoformat(assignment_obj.due_date) if assignment_obj.due_date else assignment_obj.due_date
+            assignment_obj.release_date = (
+                datetime.fromisoformat(assignment_obj.release_date)
+                if assignment_obj.release_date
+                else assignment_obj.release_date
+            )
 
-            assignment_obj.late_due_date = datetime.fromisoformat(assignment_obj.late_due_date) if assignment_obj.late_due_date else assignment_obj.late_due_date
+            assignment_obj.due_date = (
+                datetime.fromisoformat(assignment_obj.due_date)
+                if assignment_obj.due_date
+                else assignment_obj.due_date
+            )
+
+            assignment_obj.late_due_date = (
+                datetime.fromisoformat(assignment_obj.late_due_date)
+                if assignment_obj.late_due_date
+                else assignment_obj.late_due_date
+            )
 
             # Add the assignment dictionary to the list
             assignments_list.append(assignment_obj)
@@ -104,38 +116,44 @@ def get_assignments_student_view(coursepage_soup):
         # Extract release date, due date, and late due date
         try:  # release date, due date, and late due date not guaranteed to be available
             release_obj = assignment[2].find(class_="submissionTimeChart--releaseDate")
-            release_date = release_obj['datetime'] if release_obj else None
+            release_date = release_obj["datetime"] if release_obj else None
             # both due data and late due date have the same class
-            due_dates_obj = assignment[2].find_all(class_="submissionTimeChart--dueDate")
+            due_dates_obj = assignment[2].find_all(
+                class_="submissionTimeChart--dueDate"
+            )
             if due_dates_obj:
-                due_date = due_dates_obj[0]['datetime'] if due_dates_obj else None
+                due_date = due_dates_obj[0]["datetime"] if due_dates_obj else None
                 if len(due_dates_obj) > 1:
                     late_due_date = (
-                        due_dates_obj[1]['datetime'] if due_dates_obj else None
+                        due_dates_obj[1]["datetime"] if due_dates_obj else None
                     )
         except IndexError:
             release_date = due_date = late_due_date = None
 
         # change to datetime objects
-        release_date = datetime.fromisoformat(release_date) if release_date else release_date
+        release_date = (
+            datetime.fromisoformat(release_date) if release_date else release_date
+        )
         due_date = datetime.fromisoformat(due_date) if due_date else due_date
-        late_due_date = datetime.fromisoformat(late_due_date) if late_due_date else late_due_date
+        late_due_date = (
+            datetime.fromisoformat(late_due_date) if late_due_date else late_due_date
+        )
 
         # Store the extracted information in a dictionary
         assignment_obj = Assignment(
-            assignment_id = assignment_id,
-            name = name,
-            release_date = release_date,
-            due_date = due_date,
-            late_due_date = late_due_date,
-            submissions_status = submission_status,
-            grade = grade,
-            max_grade = max_grade,
+            assignment_id=assignment_id,
+            name=name,
+            release_date=release_date,
+            due_date=due_date,
+            late_due_date=late_due_date,
+            submissions_status=submission_status,
+            grade=grade,
+            max_grade=max_grade,
         )
 
         # Append the dictionary to the list
         assignment_info_list.append(assignment_obj)
-        
+
         # unset dates so that next iteration doesn't use old values if no dates set
         release_date = due_date = late_due_date = None
     return assignment_info_list
