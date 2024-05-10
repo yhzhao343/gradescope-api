@@ -1,54 +1,49 @@
 # Contributing Guidelines
 
-## Setup
+We welcome any potential contributions to the gradescopeapi project! Please
+use this page as a reference if you want to help improve the project by submitting feedback, changes, etc.  
 
-Clone the repository. This project currently uses [PDM](https://pdm-project.org/en/latest/) for dependency management. If you do not plan to make any changes to the dependencies, you can use `pip` to install the dependencies instead.
 
-```bash
-# PDM
-pdm install
-```
+## Bug Reports/Enhancements Requests 
 
-```bash
-# pip
-pip install -r requirements.txt
-```
+We use [GitHub Issues](https://github.com/nyuoss/gradescope-api/issues) to track any potential bugs along with requests for features to be implemented. Please follow the provided guide for creating your bug report/feature request
+and we will respond to it as soon as possible. 
 
-## Tests
 
-Tests are performed using real Gradescope accounts to interact with the Gradescope server. As such, valid Gradescope accounts and courses are required to run the tests.
+## Making Your Own Changes
 
-### Environment
+If you want to make your own changes to the gradescopeapi, please follow the following instructions:
 
-Create an `.env` file in the root directory of the project with the following environment variables:
+1. Clone/Fork the ```gradescopeapi``` repository
+2. Create a ```feature``` branch
+3. Make your desired changes
+4. Push the changes
+5. Submit a Pull Request
 
-```
-GRADESCOPE_CI_STUDENT_EMAIL
-GRADESCOPE_CI_STUDENT_PASSWORD
-GRADESCOPE_CI_INSTRUCTOR_EMAIL
-GRADESCOPE_CI_INSTRUCTOR_PASSWORD
-```
-
-### Running tests locally
-
-Tests can be run locally using `pytest`. A PDM script is also provided to run the tests.
+Ensure that your changes adhere to the **coding style**. This can be done using ```pdm``` to run the ```ruff``` linter:
 
 ```bash
-pytest tests
-# or
-pdm run test
+pdm format
+# and
+pdm lint
 ```
 
-### CI
+## Pull Requests
+If you have existing chnages that you want added to gradescopeapi, please create a pull request using [GitHub](https://github.com/nyuoss/gradescope-api/pulls). 
 
-Tests are run automatically using GitHub Actions.
+Include in your pull request:
+1. Summary of the changes you made
+2. Detailed description of the exact changes
+3. Checks made 
+4. Members of the team to review the request
+5. A reference to the issue (optional)
 
-### Running CI locally
+Once you have submitted your pull requests, a team member will review the changes and provide feedback as necessary. If your changes are approved, they will be merged with the ```main``` branch. 
 
-Install [act](https://github.com/nektos/act)
 
-From the root of the repository, run the following command and pass in the `.env` file for Gradescope test account credentials:
 
-```bash
-act --secret-file .env
-```
+
+
+
+
+
