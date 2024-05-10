@@ -1,16 +1,17 @@
 from bs4 import BeautifulSoup
 import requests
 from gradescopeapi._classes._courses import Course
+from gradescopeapi._classes._member import Member
+import json
 
 
-def scrape_courses_info(
-    session: requests.Session, soup: BeautifulSoup, user_type: str
+def get_courses_info(
+    soup: BeautifulSoup, user_type: str
 ) -> tuple[dict[str, Course], bool]:
     """
     Scrape all course info from the main page of Gradescope.
 
     Args:
-        session (requests.Session): The session object used for making HTTP requests.
         soup (BeautifulSoup): BeautifulSoup object with parsed HTML.
         user_type (str): The user type to scrape courses for (Instructor or Student courses).
 
@@ -74,15 +75,21 @@ def scrape_courses_info(
 
             # fetch number of grades published and number of assignments
             if user_type == "Instructor Courses" or is_instructor:
+                # find number of grades published and number of assignments
+                # if they exist
                 num_grades_published = course.find(
                     "div", class_="courseBox--noGradesPublised"
                 )
-                num_grades_published = num_grades_published.text
+                if num_grades_published is not None:
+                    num_grades_published = num_grades_published.text
+
                 num_assignments = course.find(
                     "div",
                     class_="courseBox--assignments courseBox--assignments-unpublished",
                 )
-                num_assignments = num_assignments.text
+                if num_assignments is not None:
+                    num_assignments = num_assignments.text
+
             else:
                 # students do not have number of grades published, so set to None
                 num_grades_published = None
@@ -106,3 +113,64 @@ def scrape_courses_info(
             course = course.find_next_sibling("a")
 
     return all_courses, is_instructor
+
+
+def get_course_members(soup: BeautifulSoup) -> list[Member]:
+    """
+    Scrape all course members from the membership page of a Gradescope course.
+
+    Args:
+        soup (BeautifulSoup): BeautifulSoup object with parsed HTML.
+
+    Returns:
+        List: A list of Member objects containing all course members' info.
+
+        For example:
+        [
+            Member(...),
+            Member(...)
+        ]
+    """
+
+    member_list = []
+
+    # maps role id to role name
+    id_to_role = {"0": "Student", "1": "Instructor", "2": "TA", "3": "Reader"}
+
+    # find all rows with class rosterRow (each row is a member)
+    roster_rows = soup.find_all("tr", class_="rosterRow")
+
+    for row in roster_rows:
+        # get all table data for each row
+        cells = row.find_all("td")
+
+        # get data from first cell
+        cell = cells[0]
+
+        data_button = cell.find("button", class_="rosterCell--editIcon")
+
+        # fetch full name from data-cm attribute in button
+        data_cm = data_button.get("data-cm")
+        json_data_cm = json.loads(data_cm)  # convert to json
+        full_name = json_data_cm.get("full_name")
+
+        # fetch email, id, and role from data attributes in button
+        email = data_button.get("data-email")
+        id = data_button.get("data-id")
+        role = id_to_role[data_button.get("data-role")]
+
+        # fetch number of submissions from 4th cell
+        num_submissions = int(cells[3].text)
+
+        # create Member object with all relevant info
+        member = Member(
+            full_name=full_name,
+            email=email,
+            role=role,
+            id=id,
+            num_submissions=num_submissions,
+        )
+
+        member_list.append(member)
+
+    return member_list
