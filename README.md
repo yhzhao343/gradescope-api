@@ -51,7 +51,7 @@ More examples can be found in the [tests](tests/) directory.
 
 ## Testing
 
-For information on how to run your own tests using gradescopeapi, refer to [TESTING.md](docs/TESTING.md)
+For information on how to run your own tests using ```gradescopeapi```, refer to [TESTING.md](docs/TESTING.md)
 
 ## Contributing Guidelines
 
