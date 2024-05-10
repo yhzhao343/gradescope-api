@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import List, Dict
+import time
 
 from gradescopeapi._classes._scrape_helpers import scrape_courses_info
 from gradescopeapi._classes._assignment_helpers import (
@@ -156,6 +157,7 @@ class Account:
         session = self.session
         submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
         submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
+        # select submissions (class of td.table--primaryLink a tag, submission id stored in href link)
         submissions_a_tags = submissions_soup.select("td.table--primaryLink a")
         submission_ids = [
             a_tag.attrs.get("href").split("/")[-1] for a_tag in submissions_a_tags
@@ -166,6 +168,8 @@ class Account:
                 session, course_id, assignment_id, submission_id
             )
             submission_links[submission_id] = aws_links
+            # sleep for 0.1 seconds to avoid sending too many requests to gradescope
+            time.sleep(0.1)
         return submission_links
 
     def get_assignment_submission(
