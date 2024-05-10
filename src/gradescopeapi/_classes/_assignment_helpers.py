@@ -2,6 +2,8 @@ import requests
 import json
 from datetime import datetime
 
+from gradescopeapi._classes._assignments import Assignment
+
 
 def check_page_auth(session, endpoint):
     """
@@ -37,25 +39,26 @@ def get_assignments_instructor_view(coursepage_soup):
 
         # Extract information for each assignment
         for assignment in assignment_json["table_data"]:
-            assignment_dict = {
-                "assignment_id": assignment["url"].split("/")[-1],
-                "name": assignment["title"],
-                "release_date": assignment["submission_window"]["release_date"],
-                "due_date": assignment["submission_window"]["due_date"],
-                "late_due_date": assignment["submission_window"]["hard_due_date"],
-                "submissions_status": None,
-                "grade": None,
-                "max_grade": str(float(assignment["total_points"])),
-            }
-            # convert to datetime objects
-            assignment_dict["release_date"] = datetime.fromisoformat(assignment_dict["release_date"]) if assignment_dict.get("release_date") else assignment_dict.get("release_date")
-            
-            assignment_dict["due_date"] = datetime.fromisoformat(assignment_dict["due_date"]) if assignment_dict.get("due_date") else assignment_dict.get("due_date")
+            assignment_obj = Assignment(
+                assignment_id = assignment["url"].split("/")[-1],
+                name = assignment["title"],
+                release_date = assignment["submission_window"]["release_date"],
+                due_date = assignment["submission_window"]["due_date"],
+                late_due_date = assignment["submission_window"].get("hard_due_date"),
+                submissions_status = None,
+                grade = None,
+                max_grade = str(float(assignment["total_points"])),
+            )
 
-            assignment_dict["late_due_date"] = datetime.fromisoformat(assignment_dict["late_due_date"]) if assignment_dict.get("late_due_date") else assignment_dict.get("late_due_date")
+            # convert to datetime objects
+            assignment_obj.release_date = datetime.fromisoformat(assignment_obj.release_date) if assignment_obj.release_date else assignment_obj.release_date
+            
+            assignment_obj.due_date = datetime.fromisoformat(assignment_obj.due_date) if assignment_obj.due_date else assignment_obj.due_date
+
+            assignment_obj.late_due_date = datetime.fromisoformat(assignment_obj.late_due_date) if assignment_obj.late_due_date else assignment_obj.late_due_date
 
             # Add the assignment dictionary to the list
-            assignments_list.append(assignment_dict)
+            assignments_list.append(assignment_obj)
     return assignments_list
 
 
@@ -119,19 +122,19 @@ def get_assignments_student_view(coursepage_soup):
         late_due_date = datetime.fromisoformat(late_due_date) if late_due_date else late_due_date
 
         # Store the extracted information in a dictionary
-        assignment_info = {
-            "assignment_id": assignment_id,
-            "name": name,
-            "release_date": release_date,
-            "due_date": due_date,
-            "late_due_date": late_due_date,
-            "submission_status": submission_status,
-            "grade": grade,
-            "max_grade": max_grade,
-        }
+        assignment_obj = Assignment(
+            assignment_id = assignment_id,
+            name = name,
+            release_date = release_date,
+            due_date = due_date,
+            late_due_date = late_due_date,
+            submissions_status = submission_status,
+            grade = grade,
+            max_grade = max_grade,
+        )
 
         # Append the dictionary to the list
-        assignment_info_list.append(assignment_info)
+        assignment_info_list.append(assignment_obj)
         
         # unset dates so that next iteration doesn't use old values if no dates set
         release_date = due_date = late_due_date = None

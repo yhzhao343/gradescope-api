@@ -9,7 +9,7 @@ from gradescopeapi._classes._assignment_helpers import (
     get_assignments_student_view,
     get_submission_files,
 )
-
+from gradescopeapi._classes._assignments import Assignment
 
 class Account:
     def __init__(self, session):
@@ -79,25 +79,11 @@ class Account:
 
         return courses
 
-    def get_assignments(self, course_id: str) -> List[Dict[str, str]]:
+    def get_assignments(self, course_id: str) -> List[Assignment]:
         """
         Get a list of detailed assignment information for a course
         Returns:
-            list: A list of dictionaries, where the keys are the assignment info name and
-            the values is the corresponding assignment information
-            Example:
-                [
-                   {
-                        'assignment_id': 'a_id',
-                        'name': 'a_name,
-                        'release_date': 'a_release_date',
-                        'due_date': 'a_due_date',
-                        'late_due_date': 'a_late_due_date',
-                        'submissions_status': 'a_status',
-                        'grade': 'a_grade',
-                        'max_grade': 'a_max_grade'
-                   }
-                ]
+            list: A list of Assignments
         Raises:
             Exceptions:
             "One or more invalid parameters": if course_id or assignment_id is null or empty value

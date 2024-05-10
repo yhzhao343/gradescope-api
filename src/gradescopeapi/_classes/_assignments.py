@@ -4,7 +4,19 @@ import requests
 from bs4 import BeautifulSoup
 import datetime
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+from dataclasses import dataclass
 
+
+@dataclass
+class Assignment:
+    assignment_id: str
+    name: str
+    release_date: datetime.datetime
+    due_date: datetime.datetime
+    late_due_date: datetime.datetime
+    submissions_status: str
+    grade: str
+    max_grade: str
 
 def update_assignment_date(
     session: requests.Session,
