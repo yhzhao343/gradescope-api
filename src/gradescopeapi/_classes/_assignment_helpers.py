@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime
 
 
 def check_page_auth(session, endpoint):
@@ -46,6 +47,13 @@ def get_assignments_instructor_view(coursepage_soup):
                 "grade": None,
                 "max_grade": str(float(assignment["total_points"])),
             }
+            # convert to datetime objects
+            assignment_dict["release_date"] = datetime.fromisoformat(assignment_dict["release_date"]) if assignment_dict.get("release_date") else assignment_dict.get("release_date")
+            
+            assignment_dict["due_date"] = datetime.fromisoformat(assignment_dict["due_date"]) if assignment_dict.get("due_date") else assignment_dict.get("due_date")
+
+            assignment_dict["late_due_date"] = datetime.fromisoformat(assignment_dict["late_due_date"]) if assignment_dict.get("late_due_date") else assignment_dict.get("late_due_date")
+
             # Add the assignment dictionary to the list
             assignments_list.append(assignment_dict)
     return assignments_list
@@ -93,17 +101,22 @@ def get_assignments_student_view(coursepage_soup):
         # Extract release date, due date, and late due date
         try:  # release date, due date, and late due date not guaranteed to be available
             release_obj = assignment[2].find(class_="submissionTimeChart--releaseDate")
-            release_date = release_obj.text.strip() if release_obj else None
-            due_date_obj = assignment[2].find(class_="submissionTimeChart--dueDate")
-            due_date = due_date_obj.text.strip() if due_date_obj else None
-            late_due_date_obj = assignment[2].find(
-                class_="submissionTimeChart--dueDate"
-            )
-            late_due_date = (
-                late_due_date_obj.text.strip() if late_due_date_obj else None
-            )
+            release_date = release_obj['datetime'] if release_obj else None
+            # both due data and late due date have the same class
+            due_dates_obj = assignment[2].find_all(class_="submissionTimeChart--dueDate")
+            if due_dates_obj:
+                due_date = due_dates_obj[0]['datetime'] if due_dates_obj else None
+                if len(due_dates_obj) > 1:
+                    late_due_date = (
+                        due_dates_obj[1]['datetime'] if due_dates_obj else None
+                    )
         except IndexError:
             release_date = due_date = late_due_date = None
+
+        # change to datetime objects
+        release_date = datetime.fromisoformat(release_date) if release_date else release_date
+        due_date = datetime.fromisoformat(due_date) if due_date else due_date
+        late_due_date = datetime.fromisoformat(late_due_date) if late_due_date else late_due_date
 
         # Store the extracted information in a dictionary
         assignment_info = {
@@ -119,6 +132,9 @@ def get_assignments_student_view(coursepage_soup):
 
         # Append the dictionary to the list
         assignment_info_list.append(assignment_info)
+        
+        # unset dates so that next iteration doesn't use old values if no dates set
+        release_date = due_date = late_due_date = None
     return assignment_info_list
 
 
