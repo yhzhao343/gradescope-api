@@ -152,6 +152,6 @@ def get_submission_files(session, course_id, assignment_id, submission_id):
             for file_data in file_info_json["text_files"]:
                 aws_links.append(file_data["file"]["url"])
         else:
-            raise Exception("Image only submissions not yet supported")
+            raise NotImplementedError("Image only submissions not yet supported")
         # TODO add support for image questions
     return aws_links

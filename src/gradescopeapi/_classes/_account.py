@@ -78,7 +78,7 @@ class Account:
 
         return courses
 
-    def get_assignments(self, course_id: int) -> List[Dict[str, str]]:
+    def get_assignments(self, course_id: str) -> List[Dict[str, str]]:
         """
         Get a list of detailed assignment information for a course
         Returns:
@@ -103,8 +103,7 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        ACCOUNT_PAGE_ENDPOINT = "https://www.gradescope.com/courses"
-        course_endpoint = f"{ACCOUNT_PAGE_ENDPOINT}/{course_id}"
+        course_endpoint = f"https://www.gradescope.com/courses/{course_id}"
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
@@ -169,10 +168,28 @@ class Account:
             submission_links[submission_id] = aws_links
         return submission_links
 
-    def get_assignment_submission(self, student_email, course_id, assignment_id):
-        # so far only accessible for teachers, not for students to get their own submission
-        # get_assignment_submission(token, student_id, course_id, assignment_id)
-        # -> link(s) to download file or actual files themselves
+    def get_assignment_submission(
+        self, student_email: str, course_id: str, assignment_id: str
+    ) -> List[str]:
+        """
+        Get a list of aws links to pdfs of the student's most recent submission to an assignment
+        Returns:
+            list: A list of aws links as strings
+            For example:
+                [
+                    'aws_link1.com',
+                    'aws_link2.com',
+                    ...
+                ]
+        Raises:
+             Exceptions:
+                "One or more invalid parameters": if course_id or assignment_id is null or empty value
+                "You are not authorized to access this page.": if logged in user is unable to access submissions
+                "You must be logged in to access this page.": if no user is logged in
+                "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
+                "Image only submissions not yet supported": assignment is image submission only, which is not yet supported
+        NOTE: so far only accessible for teachers, not for students to get their own submission
+        """
         # fetch submission id
         ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
