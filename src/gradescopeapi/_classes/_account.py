@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from typing import List, Dict
 import time
 
-from gradescopeapi._classes._scrape_helpers import scrape_courses_info
+from gradescopeapi._classes._course_helpers import get_courses_info, get_course_members
 from gradescopeapi._classes._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
@@ -53,9 +53,7 @@ class Account:
         soup = BeautifulSoup(response.text, "html.parser")
 
         # see if user is solely a student or instructor
-        user_courses, is_instructor = scrape_courses_info(
-            self.session, soup, "Your Courses"
-        )
+        user_courses, is_instructor = get_courses_info(soup, "Your Courses")
 
         # if the user is indeed solely a student or instructor
         # return the appropriate set of courses
@@ -69,16 +67,47 @@ class Account:
         courses = {"instructor": {}, "student": {}}
 
         # get instructor courses
-        instructor_courses, _ = scrape_courses_info(
-            self.session, soup, "Instructor Courses"
-        )
+        instructor_courses, _ = get_courses_info(soup, "Instructor Courses")
         courses["instructor"] = instructor_courses
 
         # get student courses
-        student_courses, _ = scrape_courses_info(self.session, soup, "Student Courses")
+        student_courses, _ = get_courses_info(soup, "Student Courses")
         courses["student"] = student_courses
 
         return courses
+
+    def get_course_users(self, course_id: str) -> List[str]:
+        """
+        Get a list of all users in a course
+        Returns:
+            list: A list of users in the course (Member objects)
+        Raises:
+            Exceptions:
+            "One or more invalid parameters": if course_id is null or empty value
+            "You must be logged in to access this page.": if no user is logged in
+        """
+
+        membership_endpoint = (
+            f"https://www.gradescope.com/courses/{course_id}/memberships"
+        )
+
+        # check that course_id is valid (not empty)
+        if not course_id:
+            raise Exception("Invalid Course ID")
+
+        session = self.session
+
+        try:
+            # scrape page
+            membership_resp = check_page_auth(session, membership_endpoint)
+            membership_soup = BeautifulSoup(membership_resp.text, "html.parser")
+
+            # get all users in the course
+            users = get_course_members(membership_soup)
+
+            return users
+        except Exception as e:
+            return None
 
     def get_assignments(self, course_id: str) -> List[Assignment]:
         """
