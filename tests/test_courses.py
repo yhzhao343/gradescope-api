@@ -64,3 +64,27 @@ def test_get_courses_ta():
     courses = account.get_courses()
 
     assert courses["instructor"] != {} and courses["student"] != {}
+
+
+def test_membership_invalid():
+    # fetch instructor account
+    account = get_account("instructor")
+
+    invalid_course_id = "1111111"
+
+    # get course members
+    members = account.get_course_users(invalid_course_id)
+
+    assert members is None
+
+
+def test_membership():
+    # fetch instructor account
+    account = get_account("instructor")
+
+    course_id = "753413"
+
+    # get course members
+    members = account.get_course_users(course_id)
+
+    assert members is not None and len(members) > 0
