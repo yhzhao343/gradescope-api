@@ -115,12 +115,13 @@ def get_courses_info(
     return all_courses, is_instructor
 
 
-def get_course_members(soup: BeautifulSoup) -> list[Member]:
+def get_course_members(soup: BeautifulSoup, course_id: str) -> list[Member]:
     """
     Scrape all course members from the membership page of a Gradescope course.
 
     Args:
         soup (BeautifulSoup): BeautifulSoup object with parsed HTML.
+        course_id (str): The course ID to which the members belong.
 
     Returns:
         List: A list of Member objects containing all course members' info.
@@ -154,10 +155,17 @@ def get_course_members(soup: BeautifulSoup) -> list[Member]:
         json_data_cm = json.loads(data_cm)  # convert to json
         full_name = json_data_cm.get("full_name")
 
-        # fetch email, id, and role from data attributes in button
+        # fetch LMS related attributes
+        first_name = json_data_cm.get("first_name")
+        last_name = json_data_cm.get("last_name")
+        sid = json_data_cm.get("sid")
+
+        # fetch other attributes: email, id, role, and section
+        # from data attributes in button
         email = data_button.get("data-email")
         id = data_button.get("data-id")
         role = id_to_role[data_button.get("data-role")]
+        sections = data_button.get("data-sections")  # TODO: check if this is correct
 
         # fetch number of submissions from 4th cell
         num_submissions = int(cells[3].text)
@@ -165,10 +173,15 @@ def get_course_members(soup: BeautifulSoup) -> list[Member]:
         # create Member object with all relevant info
         member = Member(
             full_name=full_name,
+            first_name=first_name,
+            last_name=last_name,
+            sid=sid,
             email=email,
             role=role,
             id=id,
             num_submissions=num_submissions,
+            sections=sections,
+            course_id=course_id,
         )
 
         member_list.append(member)

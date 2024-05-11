@@ -103,7 +103,7 @@ class Account:
             membership_soup = BeautifulSoup(membership_resp.text, "html.parser")
 
             # get all users in the course
-            users = get_course_members(membership_soup)
+            users = get_course_members(membership_soup, course_id)
 
             return users
         except Exception as e:
