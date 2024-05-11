@@ -11,5 +11,5 @@ class Member:
     role: str
     id: str
     num_submissions: int
-    sections: list
+    sections: str
     course_id: str
