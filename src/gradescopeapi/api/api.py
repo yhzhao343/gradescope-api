@@ -112,12 +112,6 @@ def login(
     gs_connection: GSConnection = Depends(get_gs_connection),
 ):
     """Login to Gradescope, with correct credentials
-@app.post("/login", name="login")
-def login(
-    login_data: LoginRequestModel,
-    gs_connection: GSConnection = Depends(get_gs_connection),
-):
-    """Login to Gradescope, with correct credentials
 
     Args:
         username (str): email address of user attempting to log in
@@ -470,27 +464,6 @@ async def upload_assignment_files(
             Defaults to the session instance provided by the get_gs_connection_session dependency.
 
     Returns:
-        dict: A dictionary containing the submission link for the uploaded files.
-
-    Raises:
-        HTTPException: If the upload fails, with a 400 Bad Request status code and the error message "Upload unsuccessful".
-        HTTPException: If any other exception occurs, with a 500 Internal Server Error status code and the error message.
-    """
-    try:
-        file_objects = [io.TextIOWrapper(file.file, encoding="utf-8") for file in files]
-        submission_link = upload_assignment(
-            session=session,
-            course_id=assignment_upload.course_id,
-            assignment_id=assignment_upload.assignment_id,
-            *file_objects,
-            leaderboard_name=assignment_upload.leaderboard_name,
-        )
-        if submission_link:
-            return {"submission_link": submission_link}
-        else:
-            raise HTTPException(status_code=400, detail="Upload unsuccessful")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
         dict: A dictionary containing the submission link for the uploaded files.
 
     Raises:
