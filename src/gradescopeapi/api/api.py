@@ -67,41 +67,6 @@ def get_account():
 # Create instance of GSConnection, to be used where needed
 connection = GSConnection()
 
-
-def get_gs_connection():
-    """
-    Returns the GSConnection instance
-
-    Returns:
-        connection (GSConnection): an instance of the GSConnection class,
-            containing the session object used to make HTTP requests,
-            a boolean defining True/False if the user is logged in, and
-            the user's Account object.
-    """
-    return connection
-
-
-def get_gs_connection_session():
-    """
-    Returns session of the the GSConnection instance
-
-    Returns:
-        connection.session (GSConnection.session): an instance of the GSConnection class' session object used to make HTTP requests
-    """
-    return connection.session
-
-
-def get_account():
-    """
-    Returns the user's Account object
-
-    Returns:
-        Account (Account): an instance of the Account class, containing
-            methods for interacting with the user's courses and assignments.
-    """
-    return Account(session=get_gs_connection_session)
-
-
 @app.get("/")
 def root():
     return {"message": "Hello World"}
