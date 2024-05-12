@@ -3,6 +3,11 @@ from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
 from typing import Dict, List
 import requests
 import os
+import io
+from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
+from typing import Dict, List
+import requests
+import os
 from gradescopeapi._config.config import (
     AssignmentUpload,
     ExtensionData,
@@ -58,12 +63,55 @@ def get_account():
     """
     return Account(session=get_gs_connection_session)
 
+# Create instance of GSConnection, to be used where needed
+connection = GSConnection()
+
+
+def get_gs_connection():
+    """
+    Returns the GSConnection instance
+
+    Returns:
+        connection (GSConnection): an instance of the GSConnection class,
+            containing the session object used to make HTTP requests,
+            a boolean defining True/False if the user is logged in, and
+            the user's Account object.
+    """
+    return connection
+
+
+def get_gs_connection_session():
+    """
+    Returns session of the the GSConnection instance
+
+    Returns:
+        connection.session (GSConnection.session): an instance of the GSConnection class' session object used to make HTTP requests
+    """
+    return connection.session
+
+
+def get_account():
+    """
+    Returns the user's Account object
+
+    Returns:
+        Account (Account): an instance of the Account class, containing
+            methods for interacting with the user's courses and assignments.
+    """
+    return Account(session=get_gs_connection_session)
+
 
 @app.get("/")
 def root():
     return {"message": "Hello World"}
 
 
+@app.post("/login", name="login")
+def login(
+    login_data: LoginRequestModel,
+    gs_connection: GSConnection = Depends(get_gs_connection),
+):
+    """Login to Gradescope, with correct credentials
 @app.post("/login", name="login")
 def login(
     login_data: LoginRequestModel,
@@ -94,6 +142,7 @@ def get_courses(account: Account = Depends(get_account)):
 
     Args:
         account (Account): Account object containing the user's courses
+        account (Account): Account object containing the user's courses
 
     Returns:
         dict: dictionary of dictionaries
@@ -111,8 +160,24 @@ def get_courses(account: Account = Depends(get_account)):
 @app.post("/course_users", response_model=List[str])
 def get_course_users(course_id: str, account: Account = Depends(get_account)):
     """Get all users for a course
+        dict: dictionary of dictionaries
+
+    Raises:
+        HTTPException: If the request to get courses fails, with a 500 Internal Server Error status code and the error message.
+    """
+    try:
+        course_list = account.get_courses()
+        return course_list
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/course_users", response_model=List[str])
+def get_course_users(course_id: str, account: Account = Depends(get_account)):
+    """Get all users for a course
 
     Args:
+        course_id (str): ID of the course
         course_id (str): ID of the course
 
     Returns:
@@ -133,8 +198,26 @@ def get_course_users(course_id: str, account: Account = Depends(get_account)):
 @app.post("/assignments", response_model=List[Assignment])
 def get_assignments(course_id: CourseID, account: Account = Depends(get_account)):
     """Get all assignments for a course
+        list: list of user emails
+
+    Raises:
+        HTTPException: If the request to get course users fails, with a 500 Internal Server Error status code and the error message.
+    """
+    try:
+        course_users = account.get_course_users(course_id)
+        return course_users
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get course users. Error {e}"
+        )
+
+
+@app.post("/assignments", response_model=List[Assignment])
+def get_assignments(course_id: CourseID, account: Account = Depends(get_account)):
+    """Get all assignments for a course
 
     Args:
+        course_id (str): ID of the course
         course_id (str): ID of the course
 
     Returns:
@@ -157,8 +240,28 @@ def get_assignment_submissions(
     assignment_id: AssignmentID, account: Account = Depends(get_account)
 ):
     """Get all assignment submissions for an assignment
+        list: list of Assignment objects
+
+    Raises:
+        HTTPException: If the request to get assignments fails, with a 500 Internal Server Error status code and the error message.
+    """
+    try:
+        assignment_list = account.get_assignments(course_id.course_id)
+        return assignment_list
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get assignments. Error: {e}"
+        )
+
+
+@app.post("/assignment_submissions", response_model=Dict[str, List[str]])
+def get_assignment_submissions(
+    assignment_id: AssignmentID, account: Account = Depends(get_account)
+):
+    """Get all assignment submissions for an assignment
 
     Args:
+        assignment_id (AssignmentID): ID of the assignment
         assignment_id (AssignmentID): ID of the assignment
 
     Returns:
@@ -183,8 +286,30 @@ def get_student_assignment_submission(
     student_submission: StudentSubmission, account: Account = Depends(get_account)
 ):
     """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
+        dict: dictionary containing a list of student emails and their corresponding submission IDs
+
+    Raises:
+        HTTPException: If the request to get assignment submissions fails, with a 500 Internal Server Error status code and the error message.
+    """
+    try:
+        assignment_submissions = account.get_assignment_submissions(
+            assignment_id.course_id, assignment_id.assignment_id
+        )
+        return assignment_submissions
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get assignment submissions. Error: {e}"
+        )
+
+
+@app.post("/assignment_submission", response_model=List[str])
+def get_student_assignment_submission(
+    student_submission: StudentSubmission, account: Account = Depends(get_account)
+):
+    """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
 
     Args:
+        student_submission (StudentSubmission): ID of the assignment and student email
         student_submission (StudentSubmission): ID of the assignment and student email
 
     Returns:
@@ -215,6 +340,9 @@ def update_assignment_dates(
     Update the release and due dates for an assignment.
 
     Args:
+        assignment_dates (AssignmentDates): Pydantic model containing the course_id, assignment_id, release_date, due_date, and late_due_date.
+        session (requests.Session, optional): The session object used for making HTTP requests.
+            Defaults to the session instance provided by the get_session dependency.
         assignment_dates (AssignmentDates): Pydantic model containing the course_id, assignment_id, release_date, due_date, and late_due_date.
         session (requests.Session, optional): The session object used for making HTTP requests.
             Defaults to the session instance provided by the get_session dependency.
@@ -336,8 +464,33 @@ async def upload_assignment_files(
         files (List[UploadFile]): List of files to be uploaded.
         session (requests.Session, optional): The session object used for making HTTP requests.
             Defaults to the session instance provided by the get_gs_connection_session dependency.
+        assignment_upload (AssignmentUpload): Pydantic model containing the course_id, assignment_id, and leaderboard_name.
+        files (List[UploadFile]): List of files to be uploaded.
+        session (requests.Session, optional): The session object used for making HTTP requests.
+            Defaults to the session instance provided by the get_gs_connection_session dependency.
 
     Returns:
+        dict: A dictionary containing the submission link for the uploaded files.
+
+    Raises:
+        HTTPException: If the upload fails, with a 400 Bad Request status code and the error message "Upload unsuccessful".
+        HTTPException: If any other exception occurs, with a 500 Internal Server Error status code and the error message.
+    """
+    try:
+        file_objects = [io.TextIOWrapper(file.file, encoding="utf-8") for file in files]
+        submission_link = upload_assignment(
+            session=session,
+            course_id=assignment_upload.course_id,
+            assignment_id=assignment_upload.assignment_id,
+            *file_objects,
+            leaderboard_name=assignment_upload.leaderboard_name,
+        )
+        if submission_link:
+            return {"submission_link": submission_link}
+        else:
+            raise HTTPException(status_code=400, detail="Upload unsuccessful")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
         dict: A dictionary containing the submission link for the uploaded files.
 
     Raises:
