@@ -23,3 +23,21 @@ def test_valid_change_assignment(create_session):
         late_due_date,
     )
     assert result
+
+def test_boundary_date_assignment(create_session):
+    """Test updating assignment with boundary date values."""
+    test_session = create_session("instructor")
+    
+    course_id = "753413"
+    assignment_id = "4436170"
+    boundary_date = datetime(1900, 1, 1)  # Very old date
+
+    result = update_assignment_date(
+        test_session,
+        course_id,
+        assignment_id,
+        boundary_date,
+        boundary_date,
+        boundary_date,
+    )
+    assert result, "Failed to update assignment with boundary dates"
