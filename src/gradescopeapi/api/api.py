@@ -78,9 +78,6 @@ def login(
         username (str): email address of user attempting to log in
         password (str): password of user attempting to log in
 
-    Returns:
-        TokenModel: _description_
-
     Raises:
         HTTPException: If the request to login fails, with a 404 Unauthorized Error status code and the error message "Account not found".
     """
