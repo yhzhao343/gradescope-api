@@ -24,7 +24,7 @@ class CourseID(BaseModel):
 class AssignmentID(BaseModel):
     course_id: str
     assignment_id: str
-    
+
 
 class StudentSubmission(BaseModel):
     student_email: str
@@ -35,8 +35,8 @@ class StudentSubmission(BaseModel):
 class ExtensionData(BaseModel):
     course_id: str
     assignment_id: str
-    
-    
+
+
 class UpdateExtensionData(BaseModel):
     course_id: str
     assignment_id: str
@@ -52,7 +52,7 @@ class AssignmentDates(BaseModel):
     release_date: Optional[datetime] = None
     due_date: Optional[datetime] = None
     late_due_date: Optional[datetime] = None
-    
+
 
 class AssignmentUpload(BaseModel):
     course_id: str

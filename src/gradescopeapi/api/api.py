@@ -16,7 +16,7 @@ from gradescopeapi._config.config import (
     AssignmentID,
     StudentSubmission,
     AssignmentDates,
-    UpdateExtensionData
+    UpdateExtensionData,
 )
 from gradescopeapi.classes.account import Account
 from gradescopeapi.classes.assignments import Assignment, update_assignment_date
@@ -62,6 +62,7 @@ def get_account():
             methods for interacting with the user's courses and assignments.
     """
     return Account(session=get_gs_connection_session)
+
 
 # Create instance of GSConnection, to be used where needed
 connection = GSConnection()
