@@ -4,8 +4,6 @@ Configuration file for FastAPI. Specifies the specific objects and data models u
 
 from datetime import datetime
 from typing import Optional
-import requests
-from enum import Enum
 from pydantic import BaseModel
 
 

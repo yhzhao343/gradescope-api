@@ -1,6 +1,6 @@
 import io
 from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
-from typing import Dict, List, Optional
+from typing import Dict, List
 import requests
 import os
 from gradescopeapi._config.config import (
@@ -13,13 +13,10 @@ from gradescopeapi._config.config import (
     UpdateExtensionData,
     AssignmentUpload,
 )
-from gradescopeapi.api.constants import BASE_URL
 from gradescopeapi._classes._connection import GSConnection
 from gradescopeapi._classes._account import Account
 from gradescopeapi._classes._assignments import Assignment, update_assignment_date
-from gradescopeapi._classes._courses import Course
 from gradescopeapi._classes._extensions import (
-    Extension,
     get_extensions,
     update_student_extension,
 )
@@ -36,9 +33,9 @@ def get_gs_connection():
     Returns the GSConnection instance
 
     Returns:
-        connection (GSConnection): an instance of the GSConnection class, 
-            containing the session object used to make HTTP requests, 
-            a boolean defining True/False if the user is logged in, and 
+        connection (GSConnection): an instance of the GSConnection class,
+            containing the session object used to make HTTP requests,
+            a boolean defining True/False if the user is logged in, and
             the user's Account object.
     """
     return connection
@@ -83,7 +80,7 @@ def login(
 
     Returns:
         TokenModel: _description_
-        
+
     Raises:
         HTTPException: If the request to login fails, with a 404 Unauthorized Error status code and the error message "Account not found".
     """
@@ -106,7 +103,7 @@ def get_courses(account: Account = Depends(get_account)):
 
     Returns:
         dict: dictionary of dictionaries
-        
+
     Raises:
         HTTPException: If the request to get courses fails, with a 500 Internal Server Error status code and the error message.
     """
@@ -131,8 +128,10 @@ def get_course_users(course_id: str, account: Account = Depends(get_account)):
     """
     try:
         account.get_course_users(course_id)
-    except RuntimeError:
-        raise HTTPException(status_code=500, detail=f"Failed to get course users. Error {e}")
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get course users. Error {e}"
+        )
 
 
 @app.post("/assignments", response_model=List[Assignment])
@@ -151,7 +150,9 @@ def get_assignments(course_id: CourseID, account: Account = Depends(get_account)
     try:
         account.get_assignments(course_id.course_id)
     except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get assignments. Error: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get assignments. Error: {e}"
+        )
 
 
 @app.post("/assignment_submissions", response_model=Dict[str, List[str]])
