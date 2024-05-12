@@ -11,7 +11,7 @@ For example:
 
 ## Features
 
-Current implemented features include:
+Implemented Features Include:
 
 * Get all courses for a user
 * Get a list of all assignments for a course
