@@ -67,6 +67,7 @@ def get_account():
 # Create instance of GSConnection, to be used where needed
 connection = GSConnection()
 
+
 @app.get("/")
 def root():
     return {"message": "Hello World"}
@@ -148,9 +149,12 @@ def get_assignments(course_id: CourseID, account: Account = Depends(get_account)
             status_code=500, detail=f"Failed to get course users. Error {e}"
         )
 
+
 @app.post("/assignment_submissions", response_model=Dict[str, List[str]])
 def get_assignment_submissions(
-    course_id: CourseID, assignment_id: AssignmentID, account: Account = Depends(get_account)
+    course_id: CourseID,
+    assignment_id: AssignmentID,
+    account: Account = Depends(get_account),
 ):
     """Get all assignment submissions for an assignment
         list: list of Assignment objects
@@ -169,7 +173,9 @@ def get_assignment_submissions(
 
 @app.post("/assignment_submission", response_model=List[str])
 def get_student_assignment_submission(
-    assignment_id: AssignmentID, student_submission: StudentSubmission, account: Account = Depends(get_account)
+    assignment_id: AssignmentID,
+    student_submission: StudentSubmission,
+    account: Account = Depends(get_account),
 ):
     """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
         dict: dictionary containing a list of student emails and their corresponding submission IDs
