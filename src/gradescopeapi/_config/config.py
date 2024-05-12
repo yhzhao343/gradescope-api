@@ -2,63 +2,59 @@
 Configuration file for FastAPI. Specifies the specific objects and data models used in our api
 """
 
-import requests
-from enum import Enum
+from datetime import datetime
+from typing import List, Dict, Optional
 from pydantic import BaseModel
 
 
-class SemesterModel(str, Enum):
-    spring = "spring"
-    summer = "summer"
-    fall = "fall"
-    winter = "winter"
-
-
-class SessionModel(BaseModel):
-    session: requests.Session
-
-
-class ConnectionModel(BaseModel):
-    session: SessionModel
-    logged_in: bool = False
-
-
-class TokenModel(BaseModel):
-    access_token: str
-
-
-class CourseModel(BaseModel):
-    course_id: str
-    course_short_name: str
-    course_name: str
-    course_semester: SemesterModel
-    course_year: int
-    num_grades_published: int
-
-
-class UserModel(BaseModel):
-    user_id: str
-    user_name: str
+class UserSession(BaseModel):
     user_email: str
+    session_token: str
 
 
-class AssignmentStatusModel(str, Enum):
-    submitted = "submitted"
-    not_submitted = "not submitted"
-    graded = "graded"
+class LoginRequestModel(BaseModel):
+    email: str
+    password: str
 
 
-class AssignmentModel(BaseModel):
+class CourseID(BaseModel):
+    course_id: str
+
+
+class AssignmentID(BaseModel):
+    course_id: str
     assignment_id: str
-    assignment_name: str
-    assignment_release_date: str
-    assignment_due_date: str
-    assignment_late_due_date: str
-    assignment_status: AssignmentStatusModel
-    grade: int
-    max_grade: int
 
 
-class SubmissionModel(BaseModel):
-    submission_id: str
-    submission_link: str
+class StudentSubmission(BaseModel):
+    student_email: str
+    course_id: str
+    assignment_id: str
+
+
+class ExtensionData(BaseModel):
+    course_id: str
+    assignment_id: str
+
+
+class UpdateExtensionData(BaseModel):
+    course_id: str
+    assignment_id: str
+    user_id: str
+    release_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
+    late_due_date: Optional[datetime] = None
+
+
+class AssignmentDates(BaseModel):
+    course_id: str
+    assignment_id: str
+    release_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
+    late_due_date: Optional[datetime] = None
+
+
+class AssignmentUpload(BaseModel):
+    course_id: str
+    assignment_id: str
+    leaderboard_name: Optional[str] = None
