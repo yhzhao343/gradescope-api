@@ -105,7 +105,8 @@ def get_courses(account: Account = Depends(get_account)):
         HTTPException: If the request to get courses fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        account.get_courses()
+        course_list = account.get_courses()
+        return course_list
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -124,7 +125,8 @@ def get_course_users(course_id: str, account: Account = Depends(get_account)):
         HTTPException: If the request to get course users fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        account.get_course_users(course_id)
+        course_users = account.get_course_users(course_id)
+        return course_users
     except RuntimeError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to get course users. Error {e}"
@@ -145,7 +147,8 @@ def get_assignments(course_id: CourseID, account: Account = Depends(get_account)
         HTTPException: If the request to get assignments fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        account.get_assignments(course_id.course_id)
+        assignment_list = account.get_assignments(course_id.course_id)
+        return assignment_list
     except RuntimeError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to get assignments. Error: {e}"
@@ -168,9 +171,10 @@ def get_assignment_submissions(
         HTTPException: If the request to get assignment submissions fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        account.get_assignment_submissions(
+        assignment_submissions = account.get_assignment_submissions(
             assignment_id.course_id, assignment_id.assignment_id
         )
+        return assignment_submissions
     except RuntimeError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to get assignment submissions. Error: {e}"
@@ -193,11 +197,12 @@ def get_student_assignment_submission(
         HTTPException: If the request to get assignment submission fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        account.get_assignment_submission(
+        student_submissions = account.get_assignment_submission(
             student_submission.student_email,
             student_submission.course_id,
             student_submission.assignment_id,
         )
+        return student_submissions
     except RuntimeError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to get assignment submission. Error: {e}"
