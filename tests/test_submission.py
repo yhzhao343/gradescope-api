@@ -68,6 +68,3 @@ def test_get_assignment_submission_no_submission_found():
         with pytest.raises(Exception, match="No submission found"):
             account.get_assignment_submission(student_email, course_id, assignment_id)
 
-if __name__ == "__main__":
-    import pytest
-    pytest.main()
