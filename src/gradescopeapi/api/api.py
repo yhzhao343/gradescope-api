@@ -167,29 +167,6 @@ def get_course_users(course_id: str, account: Account = Depends(get_account)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/course_users", response_model=List[str])
-def get_course_users(course_id: str, account: Account = Depends(get_account)):
-    """Get all users for a course
-
-    Args:
-        course_id (str): ID of the course
-        course_id (str): ID of the course
-
-    Returns:
-        list: list of user emails
-
-    Raises:
-        HTTPException: If the request to get course users fails, with a 500 Internal Server Error status code and the error message.
-    """
-    try:
-        course_users = account.get_course_users(course_id)
-        return course_users
-    except RuntimeError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get course users. Error {e}"
-        )
-
-
 @app.post("/assignments", response_model=List[Assignment])
 def get_assignments(course_id: CourseID, account: Account = Depends(get_account)):
     """Get all assignments for a course
@@ -206,33 +183,9 @@ def get_assignments(course_id: CourseID, account: Account = Depends(get_account)
             status_code=500, detail=f"Failed to get course users. Error {e}"
         )
 
-
-@app.post("/assignments", response_model=List[Assignment])
-def get_assignments(course_id: CourseID, account: Account = Depends(get_account)):
-    """Get all assignments for a course
-
-    Args:
-        course_id (str): ID of the course
-        course_id (str): ID of the course
-
-    Returns:
-        list: list of Assignment objects
-
-    Raises:
-        HTTPException: If the request to get assignments fails, with a 500 Internal Server Error status code and the error message.
-    """
-    try:
-        assignment_list = account.get_assignments(course_id.course_id)
-        return assignment_list
-    except RuntimeError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get assignments. Error: {e}"
-        )
-
-
 @app.post("/assignment_submissions", response_model=Dict[str, List[str]])
 def get_assignment_submissions(
-    assignment_id: AssignmentID, account: Account = Depends(get_account)
+    course_id: CourseID, assignment_id: AssignmentID, account: Account = Depends(get_account)
 ):
     """Get all assignment submissions for an assignment
         list: list of Assignment objects
@@ -249,36 +202,9 @@ def get_assignment_submissions(
         )
 
 
-@app.post("/assignment_submissions", response_model=Dict[str, List[str]])
-def get_assignment_submissions(
-    assignment_id: AssignmentID, account: Account = Depends(get_account)
-):
-    """Get all assignment submissions for an assignment
-
-    Args:
-        assignment_id (AssignmentID): ID of the assignment
-        assignment_id (AssignmentID): ID of the assignment
-
-    Returns:
-        dict: dictionary containing a list of student emails and their corresponding submission IDs
-
-    Raises:
-        HTTPException: If the request to get assignment submissions fails, with a 500 Internal Server Error status code and the error message.
-    """
-    try:
-        assignment_submissions = account.get_assignment_submissions(
-            assignment_id.course_id, assignment_id.assignment_id
-        )
-        return assignment_submissions
-    except RuntimeError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get assignment submissions. Error: {e}"
-        )
-
-
 @app.post("/assignment_submission", response_model=List[str])
 def get_student_assignment_submission(
-    student_submission: StudentSubmission, account: Account = Depends(get_account)
+    assignment_id: AssignmentID, student_submission: StudentSubmission, account: Account = Depends(get_account)
 ):
     """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
         dict: dictionary containing a list of student emails and their corresponding submission IDs
@@ -294,35 +220,6 @@ def get_student_assignment_submission(
     except RuntimeError as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to get assignment submissions. Error: {e}"
-        )
-
-
-@app.post("/assignment_submission", response_model=List[str])
-def get_student_assignment_submission(
-    student_submission: StudentSubmission, account: Account = Depends(get_account)
-):
-    """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
-
-    Args:
-        student_submission (StudentSubmission): ID of the assignment and student email
-        student_submission (StudentSubmission): ID of the assignment and student email
-
-    Returns:
-        list: list of file names for the student's submission
-
-    Raises:
-        HTTPException: If the request to get assignment submission fails, with a 500 Internal Server Error status code and the error message.
-    """
-    try:
-        student_submission = account.get_assignment_submission(
-            student_submission.student_email,
-            student_submission.course_id,
-            student_submission.assignment_id,
-        )
-        return student_submission
-    except RuntimeError as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get assignment submission. Error: {e}"
         )
 
 
