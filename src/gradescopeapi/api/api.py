@@ -1,3 +1,4 @@
+from datetime import datetime
 import io
 from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
 from typing import Dict, List
@@ -9,20 +10,16 @@ from typing import Dict, List
 import requests
 import os
 from gradescopeapi._config.config import (
-    AssignmentUpload,
-    ExtensionData,
     LoginRequestModel,
-    CourseID,
-    AssignmentID,
-    StudentSubmission,
-    AssignmentDates,
-    UpdateExtensionData,
+    FileUploadModel
 )
 from gradescopeapi.classes.account import Account
 from gradescopeapi.classes.assignments import Assignment, update_assignment_date
 from gradescopeapi.classes.connection import GSConnection
 from gradescopeapi.classes.extensions import get_extensions, update_student_extension
 from gradescopeapi.classes.upload import upload_assignment
+from gradescopeapi.classes.courses import Course
+from gradescopeapi.classes.member import Member
 
 app = FastAPI()
 
@@ -67,6 +64,8 @@ def get_account():
 # Create instance of GSConnection, to be used where needed
 connection = GSConnection()
 
+account = None
+
 
 @app.get("/")
 def root():
@@ -92,17 +91,18 @@ def login(
 
     try:
         connection.login(user_email, password)
+        global account
+        account = connection.account
         return {"message": "Login successful", "status_code": status.HTTP_200_OK}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=f"Account not found. Error {e}")
 
 
-@app.post("/courses", response_model=Dict[str, Dict[str, Dict]])
-def get_courses(account: Account = Depends(get_account)):
+@app.post("/courses", response_model=Dict[str, Dict[str, Course]])
+def get_courses():
     """Get all courses for the user
 
     Args:
-        account (Account): Account object containing the user's courses
         account (Account): Account object containing the user's courses
 
     Returns:
@@ -118,31 +118,37 @@ def get_courses(account: Account = Depends(get_account)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/course_users", response_model=List[str])
-def get_course_users(course_id: str, account: Account = Depends(get_account)):
-    """Get all users for a course
+@app.post("/course_users", response_model=List[Member])
+def get_course_users(course_id: str):
+    """Get all users for a course. ONLY FOR INSTRUCTORS.
+
+    Args:
+        course_id (str): The ID of the course.
+
+    Returns:
         dict: dictionary of dictionaries
 
     Raises:
         HTTPException: If the request to get courses fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        course_list = account.get_courses()
+        course_list = connection.account.get_course_users(course_id)
+        print(course_list)
         return course_list
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/assignments", response_model=List[Assignment])
-def get_assignments(course_id: CourseID, account: Account = Depends(get_account)):
-    """Get all assignments for a course
+def get_assignments(course_id: str):
+    """Get all assignments for a course. ONLY FOR INSTRUCTORS.
         list: list of user emails
 
     Raises:
         HTTPException: If the request to get course users fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        course_users = account.get_course_users(course_id)
+        course_users = connection.account.get_assignments(course_id)
         return course_users
     except RuntimeError as e:
         raise HTTPException(
@@ -152,18 +158,25 @@ def get_assignments(course_id: CourseID, account: Account = Depends(get_account)
 
 @app.post("/assignment_submissions", response_model=Dict[str, List[str]])
 def get_assignment_submissions(
-    course_id: CourseID,
-    assignment_id: AssignmentID,
-    account: Account = Depends(get_account),
+    course_id: str,
+    assignment_id: str,
 ):
-    """Get all assignment submissions for an assignment
+    """Get all assignment submissions for an assignment. ONLY FOR INSTRUCTORS.
+
+    Args:
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
+
+    Returns:
         list: list of Assignment objects
 
     Raises:
         HTTPException: If the request to get assignments fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        assignment_list = account.get_assignments(course_id.course_id)
+        assignment_list = connection.account.get_assignment_submissions(
+            course_id=course_id, assignment_id=assignment_id
+        )
         return assignment_list
     except RuntimeError as e:
         raise HTTPException(
@@ -171,21 +184,28 @@ def get_assignment_submissions(
         )
 
 
-@app.post("/assignment_submission", response_model=List[str])
+@app.post("/single_assignment_submission", response_model=List[str])
 def get_student_assignment_submission(
-    assignment_id: AssignmentID,
-    student_submission: StudentSubmission,
-    account: Account = Depends(get_account),
+    student_email: str, course_id: str, assignment_id: str
 ):
     """Get a student's assignment submission. ONLY FOR INSTRUCTORS.
+
+    Args:
+        student_email (str): The email address of the student.
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
+
+    Returns:
         dict: dictionary containing a list of student emails and their corresponding submission IDs
 
     Raises:
         HTTPException: If the request to get assignment submissions fails, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        assignment_submissions = account.get_assignment_submissions(
-            assignment_id.course_id, assignment_id.assignment_id
+        assignment_submissions = connection.account.get_assignment_submission(
+            student_email=student_email,
+            course_id=course_id,
+            assignment_id=assignment_id,
         )
         return assignment_submissions
     except RuntimeError as e:
@@ -196,19 +216,25 @@ def get_student_assignment_submission(
 
 @app.post("/assignments/update_dates")
 def update_assignment_dates(
-    assignment_dates: AssignmentDates,
-    session: requests.Session = Depends(get_gs_connection_session),
+    course_id: str,
+    assignment_id: str,
+    release_date: datetime,
+    due_date: datetime,
+    late_due_date: datetime,
 ):
     """
-    Update the release and due dates for an assignment.
+    Update the release and due dates for an assignment. ONLY FOR INSTRUCTORS.
 
     Args:
-        assignment_dates (AssignmentDates): Pydantic model containing the course_id, assignment_id, release_date, due_date, and late_due_date.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_session dependency.
-        assignment_dates (AssignmentDates): Pydantic model containing the course_id, assignment_id, release_date, due_date, and late_due_date.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_session dependency.
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
+        release_date (datetime): The release date of the assignment.
+        due_date (datetime): The due date of the assignment.
+        late_due_date (datetime): The late due date of the assignment.
+
+    Notes:
+        The timezone for dates used in Gradescope is specific to an institution. For example, for NYU, the timezone is America/New_York.
+        For datetime objects passed to this function, the timezone should be set to the institution's timezone.
 
     Returns:
         dict: A dictionary with a "message" key indicating if the assignment dates were updated successfully.
@@ -217,13 +243,14 @@ def update_assignment_dates(
         HTTPException: If the assignment dates update fails, with a 400 Bad Request status code and the error message "Failed to update assignment dates".
     """
     try:
+        print(f"late due date {late_due_date}")
         success = update_assignment_date(
-            session=session,
-            course_id=assignment_dates.course_id,
-            assignment_id=assignment_dates.assignment_id,
-            release_date=assignment_dates.release_date,
-            due_date=assignment_dates.due_date,
-            late_due_date=assignment_dates.late_due_date,
+            session=connection.session,
+            course_id=course_id,
+            assignment_id=assignment_id,
+            release_date=release_date,
+            due_date=due_date,
+            late_due_date=late_due_date,
         )
         if success:
             return {
@@ -239,17 +266,13 @@ def update_assignment_dates(
 
 
 @app.post("/assignments/extensions", response_model=dict)
-def get_assignment_extensions(
-    extension_data: ExtensionData,
-    session: requests.Session = Depends(get_gs_connection_session),
-):
+def get_assignment_extensions(course_id: str, assignment_id: str):
     """
     Get all extensions for an assignment.
 
     Args:
-        extension_data (ExtensionData): Pydantic model containing the course_id and assignment_id.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_session dependency.
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
 
     Returns:
         dict: A dictionary containing the extensions, where the keys are user IDs and the values are Extension objects.
@@ -259,9 +282,9 @@ def get_assignment_extensions(
     """
     try:
         extensions = get_extensions(
-            session=session,
-            course_id=extension_data.course_id,
-            assignment_id=extension_data.assignment_id,
+            session=connection.session,
+            course_id=course_id,
+            assignment_id=assignment_id,
         )
         return extensions
     except RuntimeError as e:
@@ -270,17 +293,23 @@ def get_assignment_extensions(
 
 @app.post("/assignments/extensions/update")
 def update_extension(
-    update_extension_data: UpdateExtensionData,
-    session: requests.Session = Depends(get_gs_connection_session),
+    course_id: str,
+    assignment_id: str,
+    user_id: str,
+    release_date: datetime,
+    due_date: datetime,
+    late_due_date: datetime,
 ):
     """
-    Update the extension for a student on an assignment.
+    Update the extension for a student on an assignment. ONLY FOR INSTRUCTORS.
 
     Args:
-        update_extension_data (UpdateExtensionData): Pydantic model containing the course_id, assignment_id, user_id,
-            and optional release_date, due_date, and late_due_date.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_gs_connection_session dependency.
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
+        user_id (str): The ID of the student.
+        release_date (datetime): The release date of the extension.
+        due_date (datetime): The due date of the extension.
+        late_due_date (datetime): The late due date of the extension.
 
     Returns:
         dict: A dictionary with a "message" key indicating if the extension was updated successfully.
@@ -292,13 +321,13 @@ def update_extension(
     """
     try:
         success = update_student_extension(
-            session=session,
-            course_id=update_extension_data.course_id,
-            assignment_id=update_extension_data.assignment_id,
-            user_id=update_extension_data.user_id,
-            release_date=update_extension_data.release_date,
-            due_date=update_extension_data.due_date,
-            late_due_date=update_extension_data.late_due_date,
+            session=connection.session,
+            course_id=course_id,
+            assignment_id=assignment_id,
+            user_id=user_id,
+            release_date=release_date,
+            due_date=due_date,
+            late_due_date=late_due_date,
         )
         if success:
             return {
@@ -314,23 +343,22 @@ def update_extension(
 
 
 @app.post("/assignments/upload")
-async def upload_assignment_files(
-    assignment_upload: AssignmentUpload,
-    files: List[UploadFile] = File(...),
-    session: requests.Session = Depends(get_gs_connection_session),
+def upload_assignment_files(
+    course_id: str, assignment_id: str, leaderboard_name: str, file: FileUploadModel
 ):
     """
     Upload files for an assignment.
 
+    NOTE: This function within FastAPI is currently nonfunctional, as we did not
+    find the datatype for file, which would allow us to upload a file via
+    Postman. However, this functionality works correctly if a user
+    runs this as a Python package.
+
     Args:
-        assignment_upload (AssignmentUpload): Pydantic model containing the course_id, assignment_id, and leaderboard_name.
-        files (List[UploadFile]): List of files to be uploaded.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_gs_connection_session dependency.
-        assignment_upload (AssignmentUpload): Pydantic model containing the course_id, assignment_id, and leaderboard_name.
-        files (List[UploadFile]): List of files to be uploaded.
-        session (requests.Session, optional): The session object used for making HTTP requests.
-            Defaults to the session instance provided by the get_gs_connection_session dependency.
+        course_id (str): The ID of the course on Gradescope.
+        assignment_id (str): The ID of the assignment on Gradescope.
+        leaderboard_name (str): The name of the leaderboard.
+        file (FileUploadModel): The file object to upload.
 
     Returns:
         dict: A dictionary containing the submission link for the uploaded files.
@@ -340,13 +368,12 @@ async def upload_assignment_files(
         HTTPException: If any other exception occurs, with a 500 Internal Server Error status code and the error message.
     """
     try:
-        file_objects = [io.TextIOWrapper(file.file, encoding="utf-8") for file in files]
         submission_link = upload_assignment(
-            session=session,
-            course_id=assignment_upload.course_id,
-            assignment_id=assignment_upload.assignment_id,
-            *file_objects,
-            leaderboard_name=assignment_upload.leaderboard_name,
+            session=connection.session,
+            course_id=course_id,
+            assignment_id=assignment_id,
+            files=file,
+            leaderboard_name=leaderboard_name,
         )
         if submission_link:
             return {"submission_link": submission_link}

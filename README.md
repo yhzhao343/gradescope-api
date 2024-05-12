@@ -32,6 +32,14 @@ To use the project you can install the package from PyPI using pip:
 pip install gradescopeapi
 ```
 
+## Running  the API Server Locally
+
+To run the API server locally on your machine, open up the project repository on your machine that you have cloned/forked, and:
+
+1. Navigate to the `src.gradescopeapi.api` directory
+2. Run the command: `uvicorn api:app --reload` to run the server locally
+3. In a web browser, navigate to localhost:8000/docs, to see the auto-generated FastAPI docs 
+
 For additional methods of installation, refer to the [install guide](docs/INSTALL.md)
 
 ## Usage

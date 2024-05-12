@@ -2,7 +2,10 @@ from bs4 import BeautifulSoup
 from typing import List, Dict
 import time
 
-from gradescopeapi.classes._helpers._course_helpers import get_courses_info, get_course_members
+from gradescopeapi.classes._helpers._course_helpers import (
+    get_courses_info,
+    get_course_members,
+)
 from gradescopeapi.classes._helpers._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
@@ -10,6 +13,7 @@ from gradescopeapi.classes._helpers._assignment_helpers import (
     get_submission_files,
 )
 from gradescopeapi.classes.assignments import Assignment
+from gradescopeapi.classes.member import Member
 
 
 class Account:
@@ -76,7 +80,7 @@ class Account:
 
         return courses
 
-    def get_course_users(self, course_id: str) -> List[str]:
+    def get_course_users(self, course_id: str) -> List[Member]:
         """
         Get a list of all users in a course
         Returns:
