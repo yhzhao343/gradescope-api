@@ -21,6 +21,13 @@ Implemented Features Include:
 * Upload submissions to assignments
 * API server to interact with library without Python
 
+
+## Demo 
+To get a feel for how the API works, we have provided a demo video of the features in-use: [link](https://youtu.be/eK9m4nVjU1A?si=6GTevv23Vym0Mu8V)
+
+Note that we only demo interacting with the API server, you can alternatively use the Python library directly. 
+
+
 ## Setup
 
 To use the project you can install the package from PyPI using pip:
@@ -29,30 +36,60 @@ To use the project you can install the package from PyPI using pip:
 pip install gradescopeapi
 ```
 
-## Running  the API Server Locally
-
-To run the API server locally on your machine, open up the project repository on your machine that you have cloned/forked, and:
-
-1. Navigate to the `src.gradescopeapi.api` directory
-2. Run the command: `uvicorn api:app --reload` to run the server locally
-3. In a web browser, navigate to localhost:8000/docs, to see the auto-generated FastAPI docs 
-
 For additional methods of installation, refer to the [install guide](docs/INSTALL.md)
 
 ## Usage
+The project is designed to be simple and easy to use. As such, we have provided users with two different options for using this project.
 
-The project is designed to be simple and easy to use. Below is an example of how to use the project to get a list of all courses for a user:
+### Option 1: FastAPI
+
+If you do not want to use Python, you can host the API using the integrated FastAPI server. This way, you can interact with Gradescope using different languages by sending HTTP requests to the API server.
+
+**Running  the API Server Locally**
+
+To run the API server locally on your machine, open the project repository on your machine that you have cloned/forked, and:
+
+1. Navigate to the `src.gradescopeapi.api` directory
+2. Run the command: `uvicorn api:app --reload` to run the server locally
+3. In a web browser, navigate to `localhost:8000/docs`, to see the auto-generated FastAPI docs 
+
+
+### Option 2: Python
+Alternatively, you can use Python to use the library directly. We have provided some sample scripts of common tasks one might do:
 
 ```python
-# login and fetch account
+from gradescopeapi.classes.connection import GSConnection
+
+# create connection and login
 connection = GSConnection()
 connection.login("email@domain.com", "password")
 
-# get courses
+"""
+Fetching all courses for user
+"""
 courses = connection.account.get_courses()
+for course in courses["instructor"]:
+    print(course)
+for course in courses["student"]:
+    print(course)
+
+"""
+Getting roster for a course
+"""
+course_id = "123456"
+members = connection.account.get_course_users(course_id)
+for member in members:
+    print(member)
+
+"""
+Getting all assignments for course
+"""
+assignments = connection.account.get_assignments(course_id)
+for assignment in assignments:
+    print(assignment)
 ```
 
-More examples can be found in the [tests](tests/) directory.
+For more examples of features not covered here such as changing extensions, uploading files, etc., please refer to the [tests](tests/) directory.
 
 ## Testing
 
