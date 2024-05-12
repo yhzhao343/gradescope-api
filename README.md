@@ -11,15 +11,12 @@ For example:
 
 ## Features
 
-Currently implemented features include:
+Current implemented features include:
 
 * Get all courses for a user
+* Get a list of all assignments for a course
 * Get all extensions for an assignment in a course
 * Add/remove/modify extensions for an assignment in a course
-
-Planned features include:
-
-* Get a list of all assignments for a course
 * Add/remove/modify dates for an assignment in a course
 * Upload submissions to assignments
 * API server to interact with library without Python
