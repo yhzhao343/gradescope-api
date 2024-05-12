@@ -111,7 +111,6 @@ class Account:
 
             return users
         except Exception as e:
-            print(e)
             return None
 
     def get_assignments(self, course_id: str) -> List[Assignment]:
@@ -126,7 +125,6 @@ class Account:
             "You must be logged in to access this page.": if no user is logged in
         """
         course_endpoint = f"https://www.gradescope.com/courses/{course_id}"
-        print(course_endpoint)
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
