@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 
-from gradescopeapi._classes._extensions import get_extensions, update_student_extension
+from gradescopeapi.classes.extensions import get_extensions, update_student_extension
 
 
 def test_get_extensions(create_session):

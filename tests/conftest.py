@@ -1,5 +1,5 @@
 import pytest
-from gradescopeapi._classes._connection import GSConnection
+from gradescopeapi.classes.connection import GSConnection
 from dotenv import load_dotenv
 import os
 

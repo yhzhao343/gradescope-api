@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from gradescopeapi._classes._connection import GSConnection
+from gradescopeapi.classes.connection import GSConnection
 
 # load .env file
 load_dotenv()

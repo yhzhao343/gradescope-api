@@ -54,8 +54,6 @@ def update_assignment_date(
     soup = BeautifulSoup(response.text, "html.parser")
     auth_token = soup.select_one('input[name="authenticity_token"]')["value"]
 
-    late_due_date = datetime.datetime.today()
-
     # Setup multipart form data
     multipart = MultipartEncoder(
         fields={
