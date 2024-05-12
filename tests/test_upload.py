@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-from gradescopeapi._classes._connection import GSConnection
+from gradescopeapi.classes.connection import GSConnection
 
-from gradescopeapi._classes._upload import upload_assignment
+from gradescopeapi.classes.upload import upload_assignment
 
 # load .env file
 load_dotenv()

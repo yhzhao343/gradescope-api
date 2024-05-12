@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
-from gradescopeapi._classes._courses import Course
-from gradescopeapi._classes._member import Member
+from gradescopeapi.classes._courses import Course
+from gradescopeapi.classes._member import Member
 import json
 
 

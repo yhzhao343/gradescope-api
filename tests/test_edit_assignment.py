@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from gradescopeapi._classes._assignments import update_assignment_date
+from gradescopeapi.classes.assignments import update_assignment_date
 
 
 def test_valid_change_assignment(create_session):
