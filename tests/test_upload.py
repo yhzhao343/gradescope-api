@@ -80,3 +80,13 @@ def test_invalid_upload():
         )
 
     assert submission_link is None
+
+def test_upload_with_no_files():
+    test_session = new_session("student")
+    course_id = "753413"
+    assignment_id = "4455030"
+    # No files are passed
+    submission_link = upload_assignment(test_session, course_id, assignment_id)
+    assert submission_link is None, "Should handle missing files gracefully"
+    
+        
