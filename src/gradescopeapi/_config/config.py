@@ -3,6 +3,7 @@ Configuration file for FastAPI. Specifies the specific objects and data models u
 """
 
 from datetime import datetime
+import io
 from typing import List, Dict, Optional
 from pydantic import BaseModel
 
@@ -52,6 +53,10 @@ class AssignmentDates(BaseModel):
     release_date: Optional[datetime] = None
     due_date: Optional[datetime] = None
     late_due_date: Optional[datetime] = None
+
+
+class FileUploadModel(BaseModel, arbitrary_types_allowed=True):
+    file: io.TextIOWrapper
 
 
 class AssignmentUpload(BaseModel):

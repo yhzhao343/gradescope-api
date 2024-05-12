@@ -2,7 +2,10 @@ from bs4 import BeautifulSoup
 from typing import List, Dict
 import time
 
-from gradescopeapi.classes._helpers._course_helpers import get_courses_info, get_course_members
+from gradescopeapi.classes._helpers._course_helpers import (
+    get_courses_info,
+    get_course_members,
+)
 from gradescopeapi.classes._helpers._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
@@ -10,6 +13,7 @@ from gradescopeapi.classes._helpers._assignment_helpers import (
     get_submission_files,
 )
 from gradescopeapi.classes.assignments import Assignment
+from gradescopeapi.classes.member import Member
 
 
 class Account:
@@ -76,7 +80,7 @@ class Account:
 
         return courses
 
-    def get_course_users(self, course_id: str) -> List[str]:
+    def get_course_users(self, course_id: str) -> List[Member]:
         """
         Get a list of all users in a course
         Returns:
@@ -107,6 +111,7 @@ class Account:
 
             return users
         except Exception as e:
+            print(e)
             return None
 
     def get_assignments(self, course_id: str) -> List[Assignment]:
@@ -121,6 +126,7 @@ class Account:
             "You must be logged in to access this page.": if no user is logged in
         """
         course_endpoint = f"https://www.gradescope.com/courses/{course_id}"
+        print(course_endpoint)
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
