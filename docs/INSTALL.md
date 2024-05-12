@@ -3,7 +3,7 @@
 Clone/Fork the repository. This project currently uses [PDM](https://pdm-project.org/en/latest/) for dependency management. 
 
 ### Instructions:
-
+Run at root of repository:
 1. Initialize repository using `pdm install`
 2. Update dependencies using `pdm update`
 3. Activate virtual environment using `pdm venv activate`
@@ -26,7 +26,8 @@ Additional scripts are also available and can be seen using `pdm run --list`
 - `lint-fix` - Run static analysis and fix code
 - `format` - Format code
 - `format-test` - Dry run for code formatting
-Run at root of repository:
+- `export` - export pdm dependencies to ```requirements.txt```
+
 
 
 
