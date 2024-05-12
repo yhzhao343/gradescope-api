@@ -88,7 +88,7 @@ def login(
         connection.login(user_email, password)
         return {"message": "Login successful", "status_code": status.HTTP_200_OK}
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=f"Account not found. Error{e}")
+        raise HTTPException(status_code=404, detail=f"Account not found. Error {e}")
 
 
 @app.post("/courses", response_model=Dict[str, Dict[str, Dict]])
