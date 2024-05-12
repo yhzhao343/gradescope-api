@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 
-from gradescopeapi._classes._assignments import Assignment
+from gradescopeapi.classes.assignments import Assignment
 
 
 def check_page_auth(session, endpoint):

@@ -1,11 +1,11 @@
 import requests
 
-from gradescopeapi._classes._login_helpers import (
+from gradescopeapi.classes._helpers._login_helpers import (
     get_auth_token_init_gradescope_session,
     login_set_session_cookies,
 )
 
-from gradescopeapi._classes._account import Account
+from gradescopeapi.classes.account import Account
 
 
 class GSConnection:
