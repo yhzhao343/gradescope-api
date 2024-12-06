@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from typing import List, Dict
+from typing import List, Dict, Set
 import time
 
 from gradescopeapi.classes._helpers._course_helpers import (
@@ -239,3 +239,36 @@ class Account:
             session, course_id, assignment_id, submission_id
         )
         return aws_links
+
+    def get_assignment_graders(
+            self, course_id: str, question_id: str
+    ) -> Set[str]:
+        """
+        Get a set of graders for a specific question in an assignment
+        Returns:
+            set: A set of graders as strings
+            For example:
+                {
+                    'grader1',
+                    'grader2',
+                    ...
+                }
+        Raises:
+            Exceptions:
+                "One or more invalid parameters": if course_id or assignment_id is null or empty value
+                "You are not authorized to access this page.": if logged in user is unable to access submissions
+                "You must be logged in to access this page.": if no user is logged in
+                "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
+        """
+        QUESTION_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/questions/{question_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{QUESTION_ENDPOINT}/submissions"
+        if not course_id or not question_id:
+            raise Exception("One or more invalid parameters")
+        print(ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+        session = self.session
+        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
+        # select graders (class of td tag, grader name stored in text)
+        graders = submissions_soup.select("td")[2::3]
+        grader_names = set([grader.text for grader in graders])
+        return grader_names

@@ -29,7 +29,7 @@ pdm lint
 ```
 
 ## Pull Requests
-If you have existing chnages that you want added to gradescopeapi, please create a pull request using [GitHub](https://github.com/nyuoss/gradescope-api/pulls). 
+If you have existing changes that you want added to gradescopeapi, please create a pull request using [GitHub](https://github.com/nyuoss/gradescope-api/pulls). 
 
 Include in your pull request:
 1. Summary of the changes you made
