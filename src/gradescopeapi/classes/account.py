@@ -264,7 +264,6 @@ class Account:
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{QUESTION_ENDPOINT}/submissions"
         if not course_id or not question_id:
             raise Exception("One or more invalid parameters")
-        print(ASSIGNMENT_SUBMISSIONS_ENDPOINT)
         session = self.session
         submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
         submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
