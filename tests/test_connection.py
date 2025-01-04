@@ -1,10 +1,11 @@
-import requests
 import os
+
+import requests
 from dotenv import load_dotenv
 
 from gradescopeapi.classes._helpers._login_helpers import (
-    login_set_session_cookies,
     get_auth_token_init_gradescope_session,
+    login_set_session_cookies,
 )
 
 # load .env file

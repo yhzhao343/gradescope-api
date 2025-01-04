@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 from gradescopeapi.classes.extensions import get_extensions, update_student_extension
 
@@ -111,4 +112,3 @@ def test_invalid_course_id(create_session):
     # Attempt to fetch or modify extensions with an invalid course ID
     with pytest.raises(RuntimeError, match="Failed to get extensions"):
         get_extensions(test_session, invalid_course_id, "4330410")
-        

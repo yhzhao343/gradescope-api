@@ -1,6 +1,7 @@
-import requests
 import json
 from datetime import datetime
+
+import requests
 
 from gradescopeapi.classes.assignments import Assignment
 
@@ -114,6 +115,7 @@ def get_assignments_student_view(coursepage_soup):
             submission_status = assignment[1].text
 
         # Extract release date, due date, and late due date
+        release_date = due_date = late_due_date = None
         try:  # release date, due date, and late due date not guaranteed to be available
             release_obj = assignment[2].find(class_="submissionTimeChart--releaseDate")
             release_date = release_obj["datetime"] if release_obj else None
@@ -128,9 +130,9 @@ def get_assignments_student_view(coursepage_soup):
                         due_dates_obj[1]["datetime"] if due_dates_obj else None
                     )
         except IndexError:
-            release_date = due_date = late_due_date = None
+            pass
 
-        # change to datetime objects
+        # convert to datetime objects
         release_date = (
             datetime.fromisoformat(release_date) if release_date else release_date
         )
@@ -154,8 +156,6 @@ def get_assignments_student_view(coursepage_soup):
         # Append the dictionary to the list
         assignment_info_list.append(assignment_obj)
 
-        # unset dates so that next iteration doesn't use old values if no dates set
-        release_date = due_date = late_due_date = None
     return assignment_info_list
 
 

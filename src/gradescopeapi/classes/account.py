@@ -1,16 +1,16 @@
-from bs4 import BeautifulSoup
-from typing import List, Dict, Set
 import time
 
-from gradescopeapi.classes._helpers._course_helpers import (
-    get_courses_info,
-    get_course_members,
-)
+from bs4 import BeautifulSoup
+
 from gradescopeapi.classes._helpers._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
     get_assignments_student_view,
     get_submission_files,
+)
+from gradescopeapi.classes._helpers._course_helpers import (
+    get_course_members,
+    get_courses_info,
 )
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
@@ -80,7 +80,7 @@ class Account:
 
         return courses
 
-    def get_course_users(self, course_id: str) -> List[Member]:
+    def get_course_users(self, course_id: str) -> list[Member]:
         """
         Get a list of all users in a course
         Returns:
@@ -110,10 +110,10 @@ class Account:
             users = get_course_members(membership_soup, course_id)
 
             return users
-        except Exception as e:
+        except Exception:
             return None
 
-    def get_assignments(self, course_id: str) -> List[Assignment]:
+    def get_assignments(self, course_id: str) -> list[Assignment]:
         """
         Get a list of detailed assignment information for a course
         Returns:
@@ -143,7 +143,7 @@ class Account:
 
     def get_assignment_submissions(
         self, course_id: str, assignment_id: str
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """
         Get a list of dicts mapping AWS links for all submissions to each submission id
         Returns:
@@ -194,9 +194,9 @@ class Account:
 
     def get_assignment_submission(
         self, student_email: str, course_id: str, assignment_id: str
-    ) -> List[str]:
+    ) -> list[str]:
         """
-        Get a list of aws links to pdfs of the student's most recent submission to an assignment
+        Get a list of aws links to files of the student's most recent submission to an assignment
         Returns:
             list: A list of aws links as strings
             For example:
@@ -211,7 +211,8 @@ class Account:
                 "You are not authorized to access this page.": if logged in user is unable to access submissions
                 "You must be logged in to access this page.": if no user is logged in
                 "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
-                "Image only submissions not yet supported": assignment is image submission only, which is not yet supported
+                "PDF/Image only submissions not yet supported": assignment is pdf/image submission only, which is not yet supported
+                "No submission found": When no submission is found for given student_email
         NOTE: so far only accessible for teachers, not for students to get their own submission
         """
         # fetch submission id
@@ -234,15 +235,15 @@ class Account:
                 submission_id = a_element.get("href").split("/")[-1]
             else:
                 raise Exception("No submission found")
-        # call get_submission_files helper function
-        aws_links = get_submission_files(
-            session, course_id, assignment_id, submission_id
-        )
-        return aws_links
+            # call get_submission_files helper function
+            aws_links = get_submission_files(
+                session, course_id, assignment_id, submission_id
+            )
+            return aws_links
+        else:
+            raise Exception("No submission found")
 
-    def get_assignment_graders(
-            self, course_id: str, question_id: str
-    ) -> Set[str]:
+    def get_assignment_graders(self, course_id: str, question_id: str) -> set[str]:
         """
         Get a set of graders for a specific question in an assignment
         Returns:
@@ -260,7 +261,9 @@ class Account:
                 "You must be logged in to access this page.": if no user is logged in
                 "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
         """
-        QUESTION_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/questions/{question_id}"
+        QUESTION_ENDPOINT = (
+            f"https://www.gradescope.com/courses/{course_id}/questions/{question_id}"
+        )
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{QUESTION_ENDPOINT}/submissions"
         if not course_id or not question_id:
             raise Exception("One or more invalid parameters")
@@ -269,5 +272,7 @@ class Account:
         submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
         # select graders (class of td tag, grader name stored in text)
         graders = submissions_soup.select("td")[2::3]
-        grader_names = set([grader.text for grader in graders])
+        grader_names = set(
+            [grader.text for grader in graders if grader.text]
+        )  # get non-empty grader names
         return grader_names

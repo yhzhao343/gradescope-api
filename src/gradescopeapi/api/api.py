@@ -1,25 +1,15 @@
 from datetime import datetime
-import io
-from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
-from typing import Dict, List
-import requests
-import os
-import io
-from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
-from typing import Dict, List
-import requests
-import os
-from gradescopeapi._config.config import (
-    LoginRequestModel,
-    FileUploadModel
-)
+
+from fastapi import Depends, FastAPI, HTTPException, status
+
+from gradescopeapi._config.config import FileUploadModel, LoginRequestModel
 from gradescopeapi.classes.account import Account
 from gradescopeapi.classes.assignments import Assignment, update_assignment_date
 from gradescopeapi.classes.connection import GSConnection
-from gradescopeapi.classes.extensions import get_extensions, update_student_extension
-from gradescopeapi.classes.upload import upload_assignment
 from gradescopeapi.classes.courses import Course
+from gradescopeapi.classes.extensions import get_extensions, update_student_extension
 from gradescopeapi.classes.member import Member
+from gradescopeapi.classes.upload import upload_assignment
 
 app = FastAPI()
 
@@ -98,7 +88,7 @@ def login(
         raise HTTPException(status_code=404, detail=f"Account not found. Error {e}")
 
 
-@app.post("/courses", response_model=Dict[str, Dict[str, Course]])
+@app.post("/courses", response_model=dict[str, dict[str, Course]])
 def get_courses():
     """Get all courses for the user
 
@@ -118,7 +108,7 @@ def get_courses():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/course_users", response_model=List[Member])
+@app.post("/course_users", response_model=list[Member])
 def get_course_users(course_id: str):
     """Get all users for a course. ONLY FOR INSTRUCTORS.
 
@@ -139,7 +129,7 @@ def get_course_users(course_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/assignments", response_model=List[Assignment])
+@app.post("/assignments", response_model=list[Assignment])
 def get_assignments(course_id: str):
     """Get all assignments for a course. ONLY FOR INSTRUCTORS.
         list: list of user emails
@@ -156,7 +146,7 @@ def get_assignments(course_id: str):
         )
 
 
-@app.post("/assignment_submissions", response_model=Dict[str, List[str]])
+@app.post("/assignment_submissions", response_model=dict[str, list[str]])
 def get_assignment_submissions(
     course_id: str,
     assignment_id: str,
@@ -184,7 +174,7 @@ def get_assignment_submissions(
         )
 
 
-@app.post("/single_assignment_submission", response_model=List[str])
+@app.post("/single_assignment_submission", response_model=list[str])
 def get_student_assignment_submission(
     student_email: str, course_id: str, assignment_id: str
 ):
