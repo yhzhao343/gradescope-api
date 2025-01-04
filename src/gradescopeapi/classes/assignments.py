@@ -1,10 +1,11 @@
 """Functions for modifying assignment details."""
 
+import datetime
+from dataclasses import dataclass
+
 import requests
 from bs4 import BeautifulSoup
-import datetime
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from dataclasses import dataclass
 
 
 @dataclass

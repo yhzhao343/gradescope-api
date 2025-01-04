@@ -4,7 +4,6 @@ from gradescopeapi.classes._helpers._login_helpers import (
     get_auth_token_init_gradescope_session,
     login_set_session_cookies,
 )
-
 from gradescopeapi.classes.account import Account
 
 

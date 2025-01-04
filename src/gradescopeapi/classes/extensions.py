@@ -10,12 +10,13 @@ The main functions in this module are:
 - `remove_student_extension`: Removes the extension for a specific student.
 """
 
-import requests
-from bs4 import BeautifulSoup
-from dataclasses import dataclass
 import datetime
 import json
 import zoneinfo
+from dataclasses import dataclass
+
+import requests
+from bs4 import BeautifulSoup
 
 
 @dataclass
