@@ -4,6 +4,14 @@ requires = [
     "pdm-backend",
 ]
 
+[dependency-groups]
+dev = [
+    "coverage>=7.6.10",
+    "mypy>=1.8.0",
+    "pre-commit>=3.7.0",
+    "ruff>=0.4.3",
+]
+
 [project]
 authors = [
     { name = "Berry Liu" },
@@ -44,13 +52,6 @@ Repository = "https://github.com/nyuoss/gradescope-api"
 [tool.pdm]
 distribution = true
 
-[tool.pdm.dev-dependencies]
-dev = [
-    "mypy>=1.8.0",
-    "pre-commit>=3.7.0",
-    "ruff>=0.4.3",
-]
-
 [tool.pdm.scripts]
 export = "pdm export -f requirements -o requirements.txt --without-hashes"
 format = "ruff format src tests"
@@ -59,3 +60,30 @@ lint = "ruff check src tests"
 lint-fix = "ruff check --fix src tests"
 start = "python -m gradescopeapi"
 test = "pytest tests"
+test-cov-generate-html = "coverage html"
+test-cov-generate-report = "coverage run --source=gradescopeapi --module pytest tests"
+test-cov-view-html = "python -m http.server 9000 --directory htmlcov"
+
+[tool.pdm.scripts.test-cov]
+composite = [
+    "test-cov-generate-html",
+    "test-cov-generate-report",
+    "test-cov-view-html",
+]
+
+[tool.ruff.lint]
+exclude = [
+    "src/gradescopeapi/api/*.py",
+]
+ignore = [
+    "E501",
+    "SIM108",
+]
+select = [
+    "B",
+    "E",
+    "F",
+    "I",
+    "SIM",
+    "UP",
+]
