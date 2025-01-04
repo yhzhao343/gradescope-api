@@ -272,5 +272,5 @@ class Account:
         submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
         # select graders (class of td tag, grader name stored in text)
         graders = submissions_soup.select("td")[2::3]
-        grader_names = set([grader.text for grader in graders])
+        grader_names = set([grader.text for grader in graders if grader.text])  # get non-empty grader names
         return grader_names
