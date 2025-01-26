@@ -3,6 +3,7 @@ import json
 import dateutil.parser
 import requests
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes.assignments import Assignment
 
 
@@ -159,9 +160,15 @@ def get_assignments_student_view(coursepage_soup):
     return assignment_info_list
 
 
-def get_submission_files(session, course_id, assignment_id, submission_id):
+def get_submission_files(
+    session,
+    course_id,
+    assignment_id,
+    submission_id,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
+):
     ASSIGNMENT_ENDPOINT = (
-        f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
     )
 
     file_info_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{submission_id}.json?content=react&only_keys[]=text_files&only_keys[]=file_comments"

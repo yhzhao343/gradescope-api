@@ -2,6 +2,7 @@ import time
 
 from bs4 import BeautifulSoup
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes._helpers._assignment_helpers import (
     check_page_auth,
     get_assignments_instructor_view,
@@ -17,8 +18,13 @@ from gradescopeapi.classes.member import Member
 
 
 class Account:
-    def __init__(self, session):
+    def __init__(
+        self,
+        session,
+        gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
+    ):
         self.session = session
+        self.gradescope_base_url = gradescope_base_url
 
     def get_courses(self) -> dict:
         """
@@ -44,7 +50,7 @@ class Account:
             RuntimeError: If request to account page fails.
         """
 
-        endpoint = "https://www.gradescope.com/account"
+        endpoint = f"{self.gradescope_base_url}/account"
 
         # get main page
         response = self.session.get(endpoint)
@@ -92,7 +98,7 @@ class Account:
         """
 
         membership_endpoint = (
-            f"https://www.gradescope.com/courses/{course_id}/memberships"
+            f"{self.gradescope_base_url}/courses/{course_id}/memberships"
         )
 
         # check that course_id is valid (not empty)
@@ -124,7 +130,7 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        course_endpoint = f"https://www.gradescope.com/courses/{course_id}"
+        course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
@@ -170,7 +176,7 @@ class Account:
         2. Not recommended for use, since this makes a GET request for every submission -> very slow!
         3. so far only accessible for teachers, not for students to get submissions to an assignment
         """
-        ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
         if not course_id or not assignment_id:
             raise Exception("One or more invalid parameters")
@@ -216,7 +222,7 @@ class Account:
         NOTE: so far only accessible for teachers, not for students to get their own submission
         """
         # fetch submission id
-        ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
         if not (student_email and course_id and assignment_id):
             raise Exception("One or more invalid parameters")
@@ -262,7 +268,7 @@ class Account:
                 "Page not Found": When link is invalid: change in url, invalid course_if or assignment id
         """
         QUESTION_ENDPOINT = (
-            f"https://www.gradescope.com/courses/{course_id}/questions/{question_id}"
+            f"{self.gradescope_base_url}/courses/{course_id}/questions/{question_id}"
         )
         ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{QUESTION_ENDPOINT}/submissions"
         if not course_id or not question_id:
