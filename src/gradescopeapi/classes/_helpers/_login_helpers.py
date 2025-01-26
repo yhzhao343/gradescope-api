@@ -1,15 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 
-def get_auth_token_init_gradescope_session(session: requests.Session) -> str:
+
+def get_auth_token_init_gradescope_session(
+    session: requests.Session,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
+) -> str:
     """
     Go to homepage to parse hidden authenticity token and to set initial "_gradescope_session" cookie
     """
-    GS_LANDING_ENDPOINT = "https://gradescope.com"
-
     # go to homepage and set initial "_gradescope_session" cookie
-    homepage_resp = session.get(GS_LANDING_ENDPOINT)
+    homepage_resp = session.get(gradescope_base_url)
     homepage_soup = BeautifulSoup(homepage_resp.text, "html.parser")
 
     # Find the authenticity token using CSS selectors
@@ -20,9 +23,13 @@ def get_auth_token_init_gradescope_session(session: requests.Session) -> str:
 
 
 def login_set_session_cookies(
-    session: requests.Session, email: str, password: str, auth_token: str
+    session: requests.Session,
+    email: str,
+    password: str,
+    auth_token: str,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ) -> bool:
-    GS_LOGIN_ENDPOINT = "https://www.gradescope.com/login"
+    GS_LOGIN_ENDPOINT = f"{gradescope_base_url}/login"
 
     # populate params for post request to login endpoint
     login_data = {

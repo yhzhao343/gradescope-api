@@ -8,6 +8,8 @@ import requests
 from bs4 import BeautifulSoup
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
+
 
 def upload_assignment(
     session: requests.Session,
@@ -15,6 +17,7 @@ def upload_assignment(
     assignment_id: str,
     *files: io.TextIOWrapper,
     leaderboard_name: str | None = None,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ) -> str | None:
     """Uploads given file objects to the specified assignment on Gradescope.
 
@@ -28,8 +31,8 @@ def upload_assignment(
     Returns:
         str | None: Link to submission if successful or None if unsuccessful.
     """
-    GS_COURSE_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}"
-    GS_UPLOAD_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/submissions"
+    GS_COURSE_ENDPOINT = f"{gradescope_base_url}/courses/{course_id}"
+    GS_UPLOAD_ENDPOINT = f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}/submissions"
 
     # Get auth token
     # TODO: Refactor to helper function since it is needed in multiple places

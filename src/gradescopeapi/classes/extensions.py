@@ -19,6 +19,8 @@ import dateutil.parser
 import requests
 from bs4 import BeautifulSoup
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
+
 
 @dataclass
 class Extension:
@@ -30,7 +32,10 @@ class Extension:
 
 
 def get_extensions(
-    session: requests.Session, course_id: str, assignment_id: str
+    session: requests.Session,
+    course_id: str,
+    assignment_id: str,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ) -> dict:
     """Get all extensions for an assignment.
 
@@ -52,7 +57,7 @@ def get_extensions(
         RuntimeError: If the request to get extensions fails.
     """
 
-    GS_EXTENSIONS_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/extensions"
+    GS_EXTENSIONS_ENDPOINT = f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}/extensions"
     GS_EXTENSIONS_TABLE_CSS_CLASSES = (
         "table js-overridesTable"  # Table containing extensions
     )
@@ -139,6 +144,7 @@ def update_student_extension(
     release_date: datetime.datetime | None = None,
     due_date: datetime.datetime | None = None,
     late_due_date: datetime.datetime | None = None,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ) -> bool:
     """Updates the extension for a student on an assignment.
 
@@ -212,7 +218,7 @@ def update_student_extension(
 
     # send the request
     resp = session.post(
-        f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/extensions",
+        f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}/extensions",
         json=body,
     )
     return resp.status_code == 200

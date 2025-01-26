@@ -21,12 +21,11 @@ Implemented Features Include:
 * Upload submissions to assignments
 * API server to interact with library without Python
 
+## Demo
 
-## Demo 
 To get a feel for how the API works, we have provided a demo video of the features in-use: [link](https://youtu.be/eK9m4nVjU1A?si=6GTevv23Vym0Mu8V)
 
-Note that we only demo interacting with the API server, you can alternatively use the Python library directly. 
-
+Note that we only demo interacting with the API server, you can alternatively use the Python library directly.
 
 ## Setup
 
@@ -39,6 +38,7 @@ pip install gradescopeapi
 For additional methods of installation, refer to the [install guide](docs/INSTALL.md)
 
 ## Usage
+
 The project is designed to be simple and easy to use. As such, we have provided users with two different options for using this project.
 
 ### Option 1: FastAPI
@@ -51,10 +51,10 @@ To run the API server locally on your machine, open the project repository on yo
 
 1. Navigate to the `src.gradescopeapi.api` directory
 2. Run the command: `uvicorn api:app --reload` to run the server locally
-3. In a web browser, navigate to `localhost:8000/docs`, to see the auto-generated FastAPI docs 
-
+3. In a web browser, navigate to `localhost:8000/docs`, to see the auto-generated FastAPI docs
 
 ### Option 2: Python
+
 Alternatively, you can use Python to use the library directly. We have provided some sample scripts of common tasks one might do:
 
 ```python
@@ -93,7 +93,7 @@ For more examples of features not covered here such as changing extensions, uplo
 
 ## Testing
 
-For information on how to run your own tests using ```gradescopeapi```, refer to [TESTING.md](docs/TESTING.md)
+For information on how to run your own tests using `gradescopeapi`, refer to [TESTING.md](docs/TESTING.md)
 
 ## Contributing Guidelines
 

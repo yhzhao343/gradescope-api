@@ -20,9 +20,9 @@ def test_get_assignments_instructor(create_session):
     assignments = account.get_assignments(course_id)
     assert isinstance(assignments, list), "Should return a list of assignments"
     assert len(assignments) > 0, "Should contain at least 1 assignment"
-    assert all(
-        isinstance(a, Assignment) for a in assignments
-    ), "All items should be Assignment instances"
+    assert all(isinstance(a, Assignment) for a in assignments), (
+        "All items should be Assignment instances"
+    )
 
 
 def test_get_assignments_student(create_session):
@@ -32,9 +32,9 @@ def test_get_assignments_student(create_session):
     assignments = account.get_assignments(course_id)
     assert isinstance(assignments, list), "Should return a list of assignments"
     assert len(assignments) > 0, "Should contain at least 1 assignment"
-    assert all(
-        isinstance(a, Assignment) for a in assignments
-    ), "All items should be Assignment instances"
+    assert all(isinstance(a, Assignment) for a in assignments), (
+        "All items should be Assignment instances"
+    )
 
 
 def test_get_assignment_submissions(create_session):
@@ -46,9 +46,9 @@ def test_get_assignment_submissions(create_session):
     submissions = account.get_assignment_submissions(course_id, assignment_id)
     assert isinstance(submissions, dict), "Should return a dictionary of submissions"
     assert len(submissions) > 0, "Should contain at least 1 submission"
-    assert all(
-        isinstance(links, list) for links in submissions.values()
-    ), "Each submission ID should map to a list of links"
+    assert all(isinstance(links, list) for links in submissions.values()), (
+        "Each submission ID should map to a list of links"
+    )
 
 
 def test_get_assignment_submission_valid(create_session):

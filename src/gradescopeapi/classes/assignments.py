@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
+
 
 @dataclass
 class Assignment:
@@ -27,6 +29,7 @@ def update_assignment_date(
     release_date: datetime.datetime | None = None,
     due_date: datetime.datetime | None = None,
     late_due_date: datetime.datetime | None = None,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ):
     """Update the dates of an assignment on Gradescope.
 
@@ -45,9 +48,11 @@ def update_assignment_date(
     Returns:
         bool: True if the assignment dates were successfully updated, False otherwise.
     """
-    GS_EDIT_ASSIGNMENT_ENDPOINT = f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}/edit"
+    GS_EDIT_ASSIGNMENT_ENDPOINT = (
+        f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}/edit"
+    )
     GS_POST_ASSIGNMENT_ENDPOINT = (
-        f"https://www.gradescope.com/courses/{course_id}/assignments/{assignment_id}"
+        f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
     )
 
     # Get auth token
