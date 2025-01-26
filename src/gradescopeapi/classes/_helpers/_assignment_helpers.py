@@ -1,6 +1,6 @@
 import json
-from datetime import datetime
 
+import dateutil.parser
 import requests
 
 from gradescopeapi.classes.assignments import Assignment
@@ -53,19 +53,19 @@ def get_assignments_instructor_view(coursepage_soup):
 
             # convert to datetime objects
             assignment_obj.release_date = (
-                datetime.fromisoformat(assignment_obj.release_date)
+                dateutil.parser.parse(assignment_obj.release_date)
                 if assignment_obj.release_date
                 else assignment_obj.release_date
             )
 
             assignment_obj.due_date = (
-                datetime.fromisoformat(assignment_obj.due_date)
+                dateutil.parser.parse(assignment_obj.due_date)
                 if assignment_obj.due_date
                 else assignment_obj.due_date
             )
 
             assignment_obj.late_due_date = (
-                datetime.fromisoformat(assignment_obj.late_due_date)
+                dateutil.parser.parse(assignment_obj.late_due_date)
                 if assignment_obj.late_due_date
                 else assignment_obj.late_due_date
             )
@@ -134,11 +134,11 @@ def get_assignments_student_view(coursepage_soup):
 
         # convert to datetime objects
         release_date = (
-            datetime.fromisoformat(release_date) if release_date else release_date
+            dateutil.parser.parse(release_date) if release_date else release_date
         )
-        due_date = datetime.fromisoformat(due_date) if due_date else due_date
+        due_date = dateutil.parser.parse(due_date) if due_date else due_date
         late_due_date = (
-            datetime.fromisoformat(late_due_date) if late_due_date else late_due_date
+            dateutil.parser.parse(late_due_date) if late_due_date else late_due_date
         )
 
         # Store the extracted information in a dictionary

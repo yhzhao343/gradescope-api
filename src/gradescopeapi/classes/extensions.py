@@ -15,6 +15,7 @@ import json
 import zoneinfo
 from dataclasses import dataclass
 
+import dateutil.parser
 import requests
 from bs4 import BeautifulSoup
 
@@ -96,17 +97,17 @@ def get_extensions(
 
         # convert dates to datetime objects
         release_date = (
-            datetime.datetime.fromisoformat(release_date).replace(tzinfo=timezone)
+            dateutil.parser.parse(release_date).replace(tzinfo=timezone)
             if release_date
             else None
         )
         due_date = (
-            datetime.datetime.fromisoformat(due_date).replace(tzinfo=timezone)
+            dateutil.parser.parse(due_date).replace(tzinfo=timezone)
             if due_date
             else None
         )
         late_due_date = (
-            datetime.datetime.fromisoformat(late_due_date).replace(tzinfo=timezone)
+            dateutil.parser.parse(late_due_date).replace(tzinfo=timezone)
             if late_due_date
             else None
         )
