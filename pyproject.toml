@@ -1,15 +1,20 @@
 [build-system]
-build-backend = "pdm.backend"
+build-backend = "hatchling.build"
 requires = [
-    "pdm-backend",
+    "hatchling",
 ]
 
 [dependency-groups]
 dev = [
     "coverage>=7.6.10",
+    "mdformat-footnote>=0.1.1",
+    "mdformat-frontmatter>=2.0.8",
+    "mdformat-gfm-alerts>=1.0.1",
+    "mdformat>=0.7.21",
     "mypy>=1.8.0",
     "pre-commit>=3.7.0",
     "ruff>=0.4.3",
+    "rust-just>=1.39.0",
 ]
 
 [project]
@@ -22,6 +27,10 @@ authors = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "beautifulsoup4>=4.12.3",
@@ -49,41 +58,3 @@ text = "MIT"
 Homepage = "https://github.com/nyuoss/gradescope-api"
 Issues = "https://github.com/nyuoss/gradescope-api/issues"
 Repository = "https://github.com/nyuoss/gradescope-api"
-
-[tool.pdm]
-distribution = true
-
-[tool.pdm.scripts]
-export = "pdm export -f requirements -o requirements.txt --without-hashes"
-format = "ruff format src tests"
-format-test = "ruff format --check src tests"
-lint = "ruff check src tests"
-lint-fix = "ruff check --fix src tests"
-test = "pytest tests"
-test-cov-generate-html = "coverage html"
-test-cov-generate-report = "coverage run --source=gradescopeapi --module pytest tests"
-test-cov-view-html = "python -m http.server 9000 --directory htmlcov"
-
-[tool.pdm.scripts.test-cov]
-composite = [
-    "test-cov-generate-html",
-    "test-cov-generate-report",
-    "test-cov-view-html",
-]
-
-[tool.ruff.lint]
-exclude = [
-    "src/gradescopeapi/api/*.py",
-]
-ignore = [
-    "E501",
-    "SIM108",
-]
-select = [
-    "B",
-    "E",
-    "F",
-    "I",
-    "SIM",
-    "UP",
-]

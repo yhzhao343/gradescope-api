@@ -1,25 +1,27 @@
 # Gradescope API
 
+[![PyPI - Version](https://img.shields.io/pypi/v/gradescopeapi)](https://pypi.org/project/gradescopeapi/) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gradescopeapi) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/nyuoss/gradescope-api/.github%2Fworkflows%2Fmain.yaml)
+
 ## Description
 
 This *unofficial* project serves as a library for programmatically interacting with [Gradescope](https://www.gradescope.com/). The primary purpose of this project is to provide students and instructors tools for interacting with Gradescope without having to use the web interface.
 
 For example:
 
-* Students using this project could automatically query information about their courses and assignments to notify them of upcoming deadlines or new assignments.
-* Instructors could use this project bulk edit assignment due dates or sync student extensions with an external system.
+- Students using this project could automatically query information about their courses and assignments to notify them of upcoming deadlines or new assignments.
+- Instructors could use this project bulk edit assignment due dates or sync student extensions with an external system.
 
 ## Features
 
 Implemented Features Include:
 
-* Get all courses for a user
-* Get a list of all assignments for a course
-* Get all extensions for an assignment in a course
-* Add/remove/modify extensions for an assignment in a course
-* Add/remove/modify dates for an assignment in a course
-* Upload submissions to assignments
-* API server to interact with library without Python
+- Get all courses for a user
+- Get a list of all assignments for a course
+- Get all extensions for an assignment in a course
+- Add/remove/modify extensions for an assignment in a course
+- Add/remove/modify dates for an assignment in a course
+- Upload submissions to assignments
+- API server to interact with library without Python
 
 ## Demo
 
@@ -45,13 +47,13 @@ The project is designed to be simple and easy to use. As such, we have provided 
 
 If you do not want to use Python, you can host the API using the integrated FastAPI server. This way, you can interact with Gradescope using different languages by sending HTTP requests to the API server.
 
-**Running  the API Server Locally**
+**Running the API Server Locally**
 
 To run the API server locally on your machine, open the project repository on your machine that you have cloned/forked, and:
 
 1. Navigate to the `src.gradescopeapi.api` directory
-2. Run the command: `uvicorn api:app --reload` to run the server locally
-3. In a web browser, navigate to `localhost:8000/docs`, to see the auto-generated FastAPI docs
+1. Run the command: `uvicorn api:app --reload` to run the server locally
+1. In a web browser, navigate to `localhost:8000/docs`, to see the auto-generated FastAPI docs
 
 ### Option 2: Python
 

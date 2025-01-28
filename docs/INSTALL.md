@@ -1,36 +1,25 @@
-## Setup
+# Setup
 
-Clone/Fork the repository. This project currently uses [PDM](https://pdm-project.org/en/latest/) for dependency management. 
+## User Guide
 
-### Instructions:
-Run at root of repository:
-1. Initialize repository using `pdm install`
-2. Update dependencies using `pdm update`
-3. Activate virtual environment using `pdm venv activate`
+`gradescopeapi` is available on [PyPi](https://pypi.org/project/gradescopeapi/) and can be installed using your favorite Python package manager.
 
-If you do not plan to make any changes to the dependencies, you can use `pip` to install the dependencies instead.
-```bash
-# pip
-pip install -r requirements.txt
-```
+For example, `pip install gradescopeapi` or `uv add gradescopeapi`
 
+## Development Guide
 
+Clone/Fork the repository. This project currently uses [uv](https://docs.astral.sh/uv/) for project management.
 
-### Scripts
+[Just](https://github.com/casey/just) is also used as a command runner to simplify repeated commands.
 
-Additional scripts are also available and can be seen using `pdm run --list`
+### Development Steps
 
-- `start` - Start the project (run main file)
-- `test` - Run tests
-- `lint` - Run static analysis
-- `lint-fix` - Run static analysis and fix code
-- `format` - Format code
-- `format-test` - Dry run for code formatting
-- `export` - export pdm dependencies to ```requirements.txt```
-
-
-
-
-
-
-
+1. Install [uv](https://docs.astral.sh/uv/#getting-started)
+1. Navigate to project root `cd gradescopeapi`
+1. Create a virtual environment `uv venv`
+1. Activate virtual environment
+   - (macOS/Linux) `source .venv/bin/activate`
+   - (Windows) `.venv\Scripts\activate`
+1. Update the project's environment `uv sync --all-extras`
+1. Run `just` to see all available command targets.
+   - Just is added as a development dependency and should not need separate installation
