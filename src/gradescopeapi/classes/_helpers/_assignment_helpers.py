@@ -41,6 +41,10 @@ def get_assignments_instructor_view(coursepage_soup):
 
         # Extract information for each assignment
         for assignment in assignment_json["table_data"]:
+            # Skip non-assignment data like sections
+            if assignment.get("type", "") != "assignment":
+                continue
+
             assignment_obj = Assignment(
                 assignment_id=assignment["url"].split("/")[-1],
                 name=assignment["title"],
