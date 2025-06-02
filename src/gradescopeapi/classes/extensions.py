@@ -207,7 +207,7 @@ def update_student_extension(
             }
 
     # Update release date, due date, and late due date
-    body = {"override": {"user_id": user_id, "settings": {}}}
+    body = {"override": {"user_id": user_id, "settings": {"visible": True}}}
     for extension_name, extension_datetime in [
         ("release_date", release_date),
         ("due_date", due_date),

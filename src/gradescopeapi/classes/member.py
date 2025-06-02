@@ -9,7 +9,9 @@ class Member:
     sid: str
     email: str
     role: str
-    id: str
+    user_id: (
+        str | None
+    )  # used for modifying extensions, only present for 'student' accounts in a course
     num_submissions: int
     sections: str
     course_id: str

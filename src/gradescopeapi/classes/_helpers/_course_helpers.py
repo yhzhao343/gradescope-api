@@ -1,6 +1,7 @@
 import json
 
 from bs4 import BeautifulSoup
+import bs4
 
 from gradescopeapi.classes.courses import Course
 from gradescopeapi.classes.member import Member
@@ -147,11 +148,13 @@ def get_course_members(soup: BeautifulSoup, course_id: str) -> list[Member]:
     id_to_role = {"0": "Student", "1": "Instructor", "2": "TA", "3": "Reader"}
 
     # find all rows with class rosterRow (each row is a member)
-    roster_rows = soup.find_all("tr", class_="rosterRow")
+    roster_rows: bs4.ResultSet[bs4.element.Tag] = soup.find_all(
+        "tr", class_="rosterRow"
+    )
 
     for row in roster_rows:
         # get all table data for each row
-        cells = row.find_all("td")
+        cells: bs4.ResultSet[bs4.element.Tag] = row.find_all("td")
 
         # get data from first cell
         cell = cells[0]
@@ -168,30 +171,38 @@ def get_course_members(soup: BeautifulSoup, course_id: str) -> list[Member]:
         last_name = json_data_cm.get("last_name")
         sid = json_data_cm.get("sid")
 
-        # fetch other attributes: email, id, role, and section
+        # fetch other attributes: email, role, and section
         # from data attributes in button
         email = data_button.get("data-email")
-        id = data_button.get("data-id")
         role = id_to_role[data_button.get("data-role")]
         sections = data_button.get("data-sections")  # TODO: check if this is correct
+
+        # fetch user_id, only available on 'student' accounts
+        # <button name="button" type="button" class="js-rosterName" data-url="/courses/753413/gradebook.json?user_id=6515875" data-name="Gradescope API - CI Student Testing Account">Gradescope API - CI Student Testing Account</button>
+        rosterName_button = cell.find("button", class_="js-rosterName")
+        user_id = None
+        if rosterName_button is not None:
+            # data-url="/courses/753413/gradebook.json?user_id=6515875"
+            data_url: str = rosterName_button.get("data-url", None)
+            user_id = data_url.split("user_id=")[-1]
 
         # fetch number of submissions from table cell
         num_submissions = int(cells[num_submissions_column].text)
 
         # create Member object with all relevant info
-        member = Member(
-            full_name=full_name,
-            first_name=first_name,
-            last_name=last_name,
-            sid=sid,
-            email=email,
-            role=role,
-            id=id,
-            num_submissions=num_submissions,
-            sections=sections,
-            course_id=course_id,
+        member_list.append(
+            Member(
+                full_name=full_name,
+                first_name=first_name,
+                last_name=last_name,
+                sid=sid,
+                email=email,
+                role=role,
+                user_id=user_id,
+                num_submissions=num_submissions,
+                sections=sections,
+                course_id=course_id,
+            )
         )
-
-        member_list.append(member)
 
     return member_list
