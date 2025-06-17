@@ -5,6 +5,7 @@ import requests
 
 from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes.assignments import Assignment
+from datetime import datetime
 
 
 def check_page_auth(session, endpoint):
@@ -187,3 +188,45 @@ def get_submission_files(
             raise NotImplementedError("Image only submissions not yet supported")
         # TODO add support for image questions
     return aws_links
+
+
+def get_user_submission_info(tds):
+    user_sub_info = {"submissions": [{}]}
+    for td in tds:
+        a_tag = td.find("a")
+        # if td.attrs is not None and td.attrs.get("class") is not None:
+        #     print(td.attrs.get("class"))
+        if (
+            td.attrs is not None
+            and td.attrs.get("class") is not None
+            and "table--primaryLink" in td.attrs.get("class")
+            and "name" not in user_sub_info
+        ):
+            user_sub_info["name"] = a_tag.text
+            user_sub_info["submissions"][0]["submission_id"] = a_tag.attrs.get(
+                "href"
+            ).split("/")[-1]
+        elif (
+            a_tag is not None
+            and a_tag.attrs is not None
+            and a_tag.attrs.get("href").startswith("mailto:")
+        ):
+            user_sub_info["email"] = a_tag.attrs.get("href")[7:]
+        elif td.find("time"):
+            submission_date_time = datetime.strptime(
+                td.find("time").attrs.get("datetime"), "%Y-%m-%d %H:%M:%S %z"
+            )
+            user_sub_info["submissions"][0][
+                "datetime"
+            ] = submission_date_time.isoformat()
+
+            user_sub_info["submissions"][0][
+                "epochtime_s"
+            ] = submission_date_time.timestamp()
+
+    return user_sub_info
+    #     a = td.find("a")
+    #     href = a.attrs.get("href")
+    #     if href and href.startswith("mailto:"):
+    #         return href[7:]
+    # return ""
