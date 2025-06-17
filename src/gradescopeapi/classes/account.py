@@ -249,6 +249,7 @@ class Account:
                     sub_time = datetime.fromisoformat(sub_hist["created_at"]).astimezone(active_submission_tz)
                     sub_info["datetime"] = sub_time.isoformat()
                     sub_info["epochtime_s"] = sub_time.timestamp()
+                    sub_info["gradescope_submission_link"] = f"{ASSIGNMENT_ENDPOINT}/submissions/{sub_info["submission_id"]}"
 
                     if (len(sub_hist["owners"]) == 1):
                         sub_info["active"] = sub_hist["owners"][0]["active"]
