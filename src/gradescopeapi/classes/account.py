@@ -230,7 +230,7 @@ class Account:
             [td] + td.find_next_siblings("td") for td in submission_tds_filtered
         ]
         submission_infos = [get_user_submission_info(tds) for tds in submissions_tds]
-
+        print_str = ""
         if get_past_submissions:
             for info_i, info in enumerate(submission_infos):
                 ASSIGNMENT_ENDPOINT = (
@@ -241,7 +241,10 @@ class Account:
                 submission_histories = json.loads(session.get(submission_link).text)["past_submissions"]
                 active_submission_tz = datetime.fromisoformat(info["submissions"][0]["datetime"]).tzinfo
                 for sub_hist_i, sub_hist in enumerate(submission_histories):
-                    print(f"Retrieving download links for {info_i + 1}/{len(submission_infos)} user submissions: {sub_hist_i + 1}/{len(submission_histories)}            ", end="\r", flush=True)
+                    if len(print_str) > 0:
+                        print(" " * len(print_str), end="\r", flush=True)
+                    print_str = f"Retrieving download links for user: {info_i + 1}/{len(submission_infos)} sub: {sub_hist_i + 1}/{len(submission_histories)}"
+                    print(print_str, end="\r", flush=True)
                     if sub_hist_i == 0:
                         sub_info = info["submissions"][0]
                     else:
