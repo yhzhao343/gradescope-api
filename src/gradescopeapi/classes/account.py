@@ -16,6 +16,9 @@ from gradescopeapi.classes._helpers._course_helpers import (
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
 
+class NotAuthorized(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
 
 class Account:
     def __init__(
@@ -130,7 +133,7 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+        
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
