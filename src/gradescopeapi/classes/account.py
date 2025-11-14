@@ -135,18 +135,25 @@ class Account:
         if not course_id:
             raise Exception("Invalid Course ID")
         session = self.session
+        # check that course_id is valid (not empty)
+        if not course_id:
+            raise Exception("Invalid Course ID")
+        session = self.session
         # scrape page
-        coursepage_resp = check_page_auth(session, course_endpoint)
+        try:
+            # this endpoint is only available if the user is a staff of the course
+            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+            coursepage_resp = check_page_auth(session, course_endpoint)
+        except NotAuthorized:
+            # fall back to default course page if the user is a student
+            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
+            coursepage_resp = check_page_auth(session, course_endpoint)
         coursepage_soup = BeautifulSoup(coursepage_resp.text, "html.parser")
 
         # two different helper functions to parse assignment info
         # webpage html structure differs based on if user if instructor or student
         assignment_info_list = get_assignments_instructor_view(coursepage_soup)
         if not assignment_info_list:
-            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
-            # scrape page
-            coursepage_resp = check_page_auth(session, course_endpoint)
-            coursepage_soup = BeautifulSoup(coursepage_resp.text, "html.parser")
             assignment_info_list = get_assignments_student_view(coursepage_soup)
 
         return assignment_info_list
