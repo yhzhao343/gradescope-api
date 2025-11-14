@@ -15,10 +15,8 @@ from gradescopeapi.classes._helpers._course_helpers import (
 )
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
+from gradescopeapi.classes._helpers._assignment_helpers import NotAuthorized
 
-class NotAuthorized(Exception):
-    def __init__(self, *args):
-        super().__init__(*args)
 
 class Account:
     def __init__(

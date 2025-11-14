@@ -5,8 +5,10 @@ import requests
 
 from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes.assignments import Assignment
-from ...classes.account import NotAuthorized
 
+class NotAuthorized(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
 
 def check_page_auth(session, endpoint):
     """
