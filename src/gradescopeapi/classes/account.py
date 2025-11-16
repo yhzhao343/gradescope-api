@@ -118,7 +118,9 @@ class Account:
         # scrape page
         try:
             # this endpoint is only available if the user is a staff of the course
-            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+            course_endpoint = (
+                f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+            )
             coursepage_resp = check_page_auth(session, course_endpoint)
         except NotAuthorized:
             # fall back to default course page if the user is a student
