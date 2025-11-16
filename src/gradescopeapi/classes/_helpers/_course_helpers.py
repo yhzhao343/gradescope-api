@@ -7,9 +7,7 @@ from gradescopeapi.classes.courses import Course
 from gradescopeapi.classes.member import Member
 
 
-def get_courses_info(
-    soup: BeautifulSoup
-) -> dict[str, dict[str, Course]]:
+def get_courses_info(soup: BeautifulSoup) -> dict[str, dict[str, Course]]:
     """
     Scrape all course info from the main page of Gradescope.
 
@@ -54,7 +52,7 @@ def get_courses_info(
         # only need to switch to student courses if user is both staff role and student role in different courses
         if section.name == "h2" and "pageHeading" in section.get("class", []):
             # check if there is a label
-            if section.text == 'Student Courses':
+            if section.text == "Student Courses":
                 sectionType = "student"
             # else:
         elif section.name == "div" and "courseList" in section.get("class", []):
@@ -77,7 +75,9 @@ def get_courses_info(
                     time_of_year = term.text.split(" ")
                     semester = time_of_year[0]
                     year = time_of_year[1]
-                    num_assignments = course.find("div", class_="courseBox--assignments")
+                    num_assignments = course.find(
+                        "div", class_="courseBox--assignments"
+                    )
                     num_assignments = num_assignments.text
 
                     # create Course object with all relevant info
