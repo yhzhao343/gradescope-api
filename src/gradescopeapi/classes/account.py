@@ -110,15 +110,11 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
         session = self.session
-        # check that course_id is valid (not empty)
-        if not course_id:
-            raise Exception("Invalid Course ID")
-        session = self.session
+
         # scrape page
         try:
             # this endpoint is only available if the user is a staff of the course

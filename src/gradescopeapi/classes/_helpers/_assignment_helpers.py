@@ -7,8 +7,7 @@ from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes.assignments import Assignment
 
 class NotAuthorized(Exception):
-    def __init__(self, *args):
-        super().__init__(*args)
+    pass
 
 def check_page_auth(session, endpoint):
     """
@@ -22,7 +21,7 @@ def check_page_auth(session, endpoint):
         # TODO: how should we handle errors so that our API can read them?
         error_msg = [*json.loads(submissions_resp.text).values()][0]
         if error_msg == "You are not authorized to access this page.":
-            raise NotAuthorized(Exception("You are not authorized to access this page."))
+            raise NotAuthorized("You are not authorized to access this page.")
         elif error_msg == "You must be logged in to access this page.":
             raise Exception("You must be logged in to access this page.")
     elif submissions_resp.status_code == requests.codes.not_found:
