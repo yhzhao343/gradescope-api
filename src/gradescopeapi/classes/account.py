@@ -58,34 +58,13 @@ class Account:
 
         if response.status_code != 200:
             raise RuntimeError(
-                "Failed to access account page on Gradescope. Status code: {response.status_code}"
+                f"Failed to access account page on Gradescope. Status code: {response.status_code}"
             )
 
         soup = BeautifulSoup(response.text, "html.parser")
 
         # see if user is solely a student or instructor
-        user_courses, is_instructor = get_courses_info(soup, "Your Courses")
-
-        # if the user is indeed solely a student or instructor
-        # return the appropriate set of courses
-        if user_courses:
-            if is_instructor:
-                return {"instructor": user_courses, "student": {}}
-            else:
-                return {"instructor": {}, "student": user_courses}
-
-        # if user is both a student and instructor, get both sets of courses
-        courses = {"instructor": {}, "student": {}}
-
-        # get instructor courses
-        instructor_courses, _ = get_courses_info(soup, "Instructor Courses")
-        courses["instructor"] = instructor_courses
-
-        # get student courses
-        student_courses, _ = get_courses_info(soup, "Student Courses")
-        courses["student"] = student_courses
-
-        return courses
+        return get_courses_info(soup)
 
     def get_course_users(self, course_id: str) -> list[Member]:
         """
