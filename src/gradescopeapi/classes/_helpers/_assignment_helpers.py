@@ -87,13 +87,13 @@ def get_assignments_instructor_view(coursepage_soup):
 def get_assignments_student_view(coursepage_soup):
     # parse into list of lists: Assignments[row_elements[]]
     assignment_table = []
-    for assignment_row in coursepage_soup.findAll("tr", role="row")[
+    for assignment_row in coursepage_soup.find_all("tr", role="row")[
         1:-1
     ]:  # Skip header row and tail row (dropzonePreview--fileNameHeader)
         row = []
-        for th in assignment_row.findAll("th"):
+        for th in assignment_row.find_all("th"):
             row.append(th)
-        for td in assignment_row.findAll("td"):
+        for td in assignment_row.find_all("td"):
             row.append(td)
         assignment_table.append(row)
     assignment_info_list = []
