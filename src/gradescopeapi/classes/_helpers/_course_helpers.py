@@ -47,7 +47,7 @@ def get_courses_info(soup: BeautifulSoup) -> dict[str, dict[str, Course]]:
     # parse through course sections and add courses to appropriate account type
     sectionType = "instructor" if is_staff else "student"
     courses = soup.select_one("div#account-show")
-    sections = courses.findChildren(recursive=False)
+    sections = courses.find_all()
     for section in sections:
         # only need to switch to student courses if user is both staff role and student role in different courses
         if section.name == "h2" and "pageHeading" in section.get("class", []):
