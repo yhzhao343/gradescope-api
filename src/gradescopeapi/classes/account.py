@@ -15,6 +15,7 @@ from gradescopeapi.classes._helpers._course_helpers import (
 )
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
+from gradescopeapi.classes._helpers._assignment_helpers import NotAuthorized
 
 
 class Account:
@@ -109,13 +110,20 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
         session = self.session
+
         # scrape page
-        coursepage_resp = check_page_auth(session, course_endpoint)
+        try:
+            # this endpoint is only available if the user is a staff of the course
+            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+            coursepage_resp = check_page_auth(session, course_endpoint)
+        except NotAuthorized:
+            # fall back to default course page if the user is a student
+            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
+            coursepage_resp = check_page_auth(session, course_endpoint)
         coursepage_soup = BeautifulSoup(coursepage_resp.text, "html.parser")
 
         # two different helper functions to parse assignment info
