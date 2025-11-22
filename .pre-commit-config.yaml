@@ -19,9 +19,9 @@ repos:
 # export python requirements
 - repo: https://github.com/astral-sh/uv-pre-commit
   # uv version.
-  rev: 0.5.14
+  rev: 0.9.11
   hooks:
     - id: uv-export
-      args: ["--no-dev", "--frozen", "--quiet", "--output-file=requirements.txt"]
+      args: ["--output-file", "requirements.txt", "--no-dev", "--locked", "--quiet"]
     - id: uv-export
-      args: ["--only-dev", "--frozen", "--quiet", "--output-file=requirements.dev.txt"]
+      args: ["--output-file", "requirements.dev.txt", "--only-dev", "--locked", "--quiet"]
