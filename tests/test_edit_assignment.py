@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 
-from gradescopeapi.classes.assignments import update_assignment_date
+from gradescopeapi.classes.assignments import (
+    update_assignment_date,
+    update_autograder_image_name,
+)
+import requests
 
 
 def test_valid_change_assignment(create_session):
@@ -42,3 +46,77 @@ def test_boundary_date_assignment(create_session):
         boundary_date,
     )
     assert result, "Failed to update assignment with boundary dates"
+
+
+def test_autograder_valid_image_name(create_session):
+    """Test updating assignment with valid image name."""
+    test_session = create_session("instructor")
+
+    course_id = "753413"
+    assignment_id = "7193007"
+    image_name = "gradescope/autograder-base:ubuntu-22.04"
+
+    result = update_autograder_image_name(
+        test_session,
+        course_id,
+        assignment_id,
+        image_name,
+    )
+    assert result, "Failed to update autograder image name"
+
+
+def test_autograder_invalid_image_name(create_session):
+    """Test updating assignment with invalid image name."""
+    test_session = create_session("instructor")
+
+    course_id = "753413"
+    assignment_id = "7193007"
+    image_name = "gradescope/autograders:us-prod-docker_image-123456"
+
+    result = update_autograder_image_name(
+        test_session,
+        course_id,
+        assignment_id,
+        image_name,
+    )
+    assert not result, "Incorrectly updated to invalid autograder image name"
+
+
+def test_autograder_invalid_session(create_session):
+    """Test updating assignment with student session."""
+    test_session = create_session("student")
+
+    course_id = "753413"
+    assignment_id = "7193007"
+    image_name = "gradescope/autograder-base:ubuntu-22.04"
+
+    try:
+        update_autograder_image_name(
+            test_session,
+            course_id,
+            assignment_id,
+            image_name,
+        )
+        assert False, "Incorrectly updated assignment with invalid session"
+    except requests.exceptions.HTTPError as e:
+        assert e.response.status_code == 401  # HTTP 401 Not Authorized
+
+
+def test_autograder_invalid_assignment_type(create_session):
+    """Test updating assignment with invalid assignment type."""
+    test_session = create_session("instructor")
+
+    course_id = "753413"
+    assignment_id = "7205866"
+    image_name = "gradescope/autograder-base:ubuntu-22.04"
+
+    try:
+        update_autograder_image_name(
+            test_session,
+            course_id,
+            assignment_id,
+            image_name,
+        )
+        assert False, "Incorrectly updated assignment with invalid assignment"
+    except requests.exceptions.HTTPError as e:
+        assert e.response.status_code == 404  # HTTP 404 Not Found

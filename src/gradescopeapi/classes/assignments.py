@@ -30,7 +30,7 @@ def update_assignment_date(
     due_date: datetime.datetime | None = None,
     late_due_date: datetime.datetime | None = None,
     gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
-):
+) -> bool:
     """Update the dates of an assignment on Gradescope.
 
     Args:
@@ -89,3 +89,65 @@ def update_assignment_date(
     )
 
     return response.status_code == 200
+
+
+def update_autograder_image_name(
+    session: requests.Session,
+    course_id: str,
+    assignment_id: str,
+    image_name: str,
+    gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
+) -> bool:
+    """Update the Docker Hub image name of an assignment on Gradescope.
+
+    Args:
+        session (requests.Session): The session object for making HTTP requests.
+        course_id (str): The ID of the course.
+        assignment_id (str): The ID of the assignment.
+        image_name (str): The Docker Hub Image Name (user-handle/repo:tag)
+
+    Notes:
+        In most cases Gradescope does not validate that the image_name provided exists on Docker Hub. Garbage
+        values may still successfully return OK. You should test your autograder after updating the image name
+        to ensure it works as expected.
+
+        Example image name: 'gradescope/autograder-base:ubuntu-22.04'
+        from https://hub.docker.com/layers/gradescope/autograder-base/ubuntu-22.04
+
+    Returns:
+        bool: True if the image name was successfully updated, False otherwise.
+    """
+    GS_EDIT_AUTOGRADER_ASSIGNMENT_ENDPOINT = f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}/configure_autograder"
+    GS_POST_ASSIGNMENT_ENDPOINT = (
+        f"{gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
+    )
+
+    # Get auth token
+    response = session.get(GS_EDIT_AUTOGRADER_ASSIGNMENT_ENDPOINT)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "html.parser")
+    auth_token = soup.select_one('input[name="authenticity_token"]')["value"]
+
+    # Setup multipart form data
+    multipart = MultipartEncoder(
+        fields={
+            "utf8": "✓",
+            "_method": "patch",
+            "authenticity_token": auth_token,
+            "source_page": "configure_autograder",
+            "assignment[image_name]": image_name,
+        }
+    )
+    headers = {
+        "Content-Type": multipart.content_type,
+        "Referer": GS_EDIT_AUTOGRADER_ASSIGNMENT_ENDPOINT,
+    }
+
+    response = session.post(
+        GS_POST_ASSIGNMENT_ENDPOINT, data=multipart, headers=headers
+    )
+
+    soup = BeautifulSoup(response.content, "html.parser")
+    return response.status_code == 200 and not soup.find(
+        string="Docker image not found in your current course!"
+    )
