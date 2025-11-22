@@ -124,6 +124,7 @@ def update_autograder_image_name(
 
     # Get auth token
     response = session.get(GS_EDIT_AUTOGRADER_ASSIGNMENT_ENDPOINT)
+    response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
     auth_token = soup.select_one('input[name="authenticity_token"]')["value"]
 
