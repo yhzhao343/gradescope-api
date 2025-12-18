@@ -45,7 +45,7 @@ def update_assignment_date(
         The timezone for dates used in Gradescope is specific to an institution. For example, for NYU, the timezone is America/New_York.
         For datetime objects passed to this function, the timezone should be set to the institution's timezone.
 
-    Raises if session does not have access to configure autograder or if assignment does not have an autograder.
+    Raises if session does not have access to configure assignment.
 
     Returns:
         bool: True if the assignment dates were successfully updated, False otherwise.
@@ -113,7 +113,7 @@ def update_assignment_title(
     Notes:
         Assignment name cannot be all whitespace
 
-    Raises if session does not have access to configure autograder or if assignment does not have an autograder.
+    Raises if session does not have access to configure assignment.
 
     Returns:
         bool: True if the assignment dates were successfully updated, False otherwise.
