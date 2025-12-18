@@ -16,6 +16,7 @@ from gradescopeapi.classes._helpers._course_helpers import (
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
 from gradescopeapi.classes._helpers._assignment_helpers import NotAuthorized
+from gradescopeapi.classes.courses import Course
 
 
 class Account:
@@ -27,7 +28,7 @@ class Account:
         self.session = session
         self.gradescope_base_url = gradescope_base_url
 
-    def get_courses(self) -> dict:
+    def get_courses(self) -> dict[str, dict[str, Course]]:
         """
         Get all courses for the user, including both instructor and student courses
 
