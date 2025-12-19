@@ -9,10 +9,14 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 
+
 class AssignmentUpdateError(Exception):
     pass
+
+
 class InvalidTitleName(AssignmentUpdateError):
     pass
+
 
 @dataclass
 class Assignment:
@@ -161,7 +165,9 @@ def update_assignment_title(
         if error.parent is not None and error.parent.text.startswith("Title"):
             raise InvalidTitleName(f"Assignment title '{assignment_name}' is invalid")
         else:
-                raise AssignmentUpdateError("Unknown error occurred trying to update assignment title")
+            raise AssignmentUpdateError(
+                "Unknown error occurred trying to update assignment title"
+            )
 
     return response.status_code == 200
 
