@@ -2,9 +2,12 @@ from datetime import datetime, timedelta
 
 from gradescopeapi.classes.assignments import (
     update_assignment_date,
+    update_assignment_title,
     update_autograder_image_name,
+    InvalidTitleName,
 )
 import requests
+import uuid
 
 
 def test_valid_change_assignment(create_session):
@@ -46,6 +49,30 @@ def test_boundary_date_assignment(create_session):
         boundary_date,
     )
     assert result, "Failed to update assignment with boundary dates"
+
+
+def test_update_assignment_date_invalid_session(create_session):
+    """Test updating assignment with student session."""
+    test_session = create_session("student")
+
+    course_id = "753413"
+    assignment_id = "4436170"
+    release_date = datetime(2024, 4, 15)
+    due_date = release_date + timedelta(days=1)
+    late_due_date = due_date + timedelta(days=1)
+
+    try:
+        update_assignment_date(
+            test_session,
+            course_id,
+            assignment_id,
+            release_date,
+            due_date,
+            late_due_date,
+        )
+        assert False, "Incorrectly updated assignment title with invalid session"
+    except requests.exceptions.HTTPError as e:
+        assert e.response.status_code == 401  # HTTP 401 Not Authorized
 
 
 def test_autograder_valid_image_name(create_session):
@@ -120,3 +147,60 @@ def test_autograder_invalid_assignment_type(create_session):
         assert False, "Incorrectly updated assignment with invalid assignment"
     except requests.exceptions.HTTPError as e:
         assert e.response.status_code == 404  # HTTP 404 Not Found
+
+
+def test_update_assignment_title_valid_random_title(create_session):
+    """Test updating assignment with random name."""
+    test_session = create_session("instructor")
+
+    course_id = "753413"
+    assignment_id = "7332839"
+    new_assignment_name = f"Test Rename - {uuid.uuid4()}"
+
+    result = update_assignment_title(
+        test_session,
+        course_id,
+        assignment_id,
+        new_assignment_name,
+    )
+    assert result, "Failed to update assignment name"
+
+
+def test_update_assignment_title_invalid_title_whitespace(create_session):
+    """Test updating assignment with invalid name containing only whitespace."""
+    test_session = create_session("instructor")
+
+    course_id = "753413"
+    assignment_id = "7193007"
+    new_assignment_name = "  "  # whitespace only not allowed
+
+    try:
+        update_assignment_title(
+            test_session,
+            course_id,
+            assignment_id,
+            new_assignment_name,
+        )
+        assert False, "Incorrectly updated to invalid assignment name"
+    except InvalidTitleName:
+        pass
+
+
+def test_update_assignment_title_invalid_session(create_session):
+    """Test updating assignment with student session."""
+    test_session = create_session("student")
+
+    course_id = "753413"
+    assignment_id = "7332839"
+    new_assignment_name = f"Test Rename - {uuid.uuid4()}"
+
+    try:
+        update_assignment_title(
+            test_session,
+            course_id,
+            assignment_id,
+            new_assignment_name,
+        )
+        assert False, "Incorrectly updated assignment title with invalid session"
+    except requests.exceptions.HTTPError as e:
+        assert e.response.status_code == 401  # HTTP 401 Not Authorized
