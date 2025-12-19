@@ -4,6 +4,7 @@ from gradescopeapi.classes.assignments import (
     update_assignment_date,
     update_assignment_title,
     update_autograder_image_name,
+    InvalidTitleName,
 )
 import requests
 import uuid
@@ -173,13 +174,16 @@ def test_update_assignment_title_invalid_title_whitespace(create_session):
     assignment_id = "7193007"
     new_assignment_name = "  "  # whitespace only not allowed
 
-    result = update_assignment_title(
-        test_session,
-        course_id,
-        assignment_id,
-        new_assignment_name,
-    )
-    assert not result, "Incorrectly updated to invalid assignment name"
+    try:
+        update_assignment_title(
+            test_session,
+            course_id,
+            assignment_id,
+            new_assignment_name,
+        )
+        assert False, "Incorrectly updated to invalid assignment name"
+    except InvalidTitleName:
+        pass
 
 
 def test_update_assignment_title_invalid_session(create_session):
