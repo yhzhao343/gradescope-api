@@ -121,7 +121,7 @@ class Account:
 
             return users
         except Exception:
-            return None
+            return []
 
     def get_assignments(self, course_id: str) -> list[Assignment]:
         """
@@ -261,11 +261,17 @@ class Account:
 
                     if len(sub_hist["owners"]) == 1:
                         sub_info["active"] = sub_hist["owners"][0]["active"]
-                    sub_info["links"] = get_submission_files(
-                        session, course_id, assignment_id, sub_info["submission_id"]
-                    )
-                    if sub_hist_i > 0:
-                        info["submissions"].append(sub_info)
+
+                    try:
+                        sub_info["links"] = get_submission_files(
+                            session, course_id, assignment_id, sub_info["submission_id"]
+                        )
+                        if sub_hist_i > 0:
+                            info["submissions"].append(sub_info)
+                    except Exception as e:
+                        print(f"Exception occured: {e}")
+                        pass
+
                     # time.sleep(0.1)
         else:
             for info_i, info in enumerate(submission_infos):
@@ -275,13 +281,16 @@ class Account:
                     flush=True,
                 )
 
-                info["submissions"][0]["links"] = get_submission_files(
-                    session,
-                    course_id,
-                    assignment_id,
-                    info["submissions"][0]["submission_id"],
-                )
-                info["submissions"][0]["active"] = True
+                try:
+                    info["submissions"][0]["links"] = get_submission_files(
+                        session,
+                        course_id,
+                        assignment_id,
+                        info["submissions"][0]["submission_id"],
+                    )
+                    info["submissions"][0]["active"] = True
+                except Exception as e:
+                    print(f"Exception occured: {e}")
                 # time.sleep(0.1)
 
         return submission_infos
