@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 import json
 from bs4 import BeautifulSoup
-
+from typing import Any
 from gradescopeapi import DEFAULT_GRADESCOPE_BASE_URL
 from gradescopeapi.classes._helpers._assignment_helpers import (
     check_page_auth,
@@ -31,6 +31,8 @@ class Account:
     ):
         self.session = session
         self.gradescope_base_url = gradescope_base_url
+        self.assignment_submission_cache: dict[str, dict[str, dict[str, Any]]] = {}
+        # dict[str : dict[str:any]]
 
     def get_courses(self) -> dict[str, dict[str, Course]]:
         """
@@ -195,95 +197,27 @@ class Account:
     def get_assignment_submissions_for_each_users(
         self, course_id: str, assignment_id: str, get_past_submissions: bool = False
     ):
-        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
-        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
-        if not course_id or not assignment_id:
-            raise Exception("One or more invalid parameters")
-        session = self.session
-        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
-        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
-        submission_tds = submissions_soup.select("td.table--primaryLink")
-        submission_tds_filtered = []
-        submit_id_set = set()
-        for td in submission_tds:
-            tag = td.find("a")
-            if tag is not None:
-                href = tag.attrs.get("href")
-                if href is not None:
-                    td_sub_id = href.split("/")[-1]
-                    if "," not in tag.text and td_sub_id not in submit_id_set:
-                        submit_id_set.add(td_sub_id)
-                        submission_tds_filtered.append(td)
 
-        submissions_tds = [
-            [td] + td.find_next_siblings("td") for td in submission_tds_filtered
+        students = [
+            user for user in self.get_course_users(course_id) if user.role == "Student"
         ]
-        submission_infos = [get_user_submission_info(tds) for tds in submissions_tds]
-        print_str = ""
+        info_dict = self.get_assignment_submission_infos(course_id, assignment_id)
         if get_past_submissions:
-            for info_i, info in enumerate(submission_infos):
-                ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
-
-                submission_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{info['submissions'][0]['submission_id']}.json?content=react&only_keys%5B%5D=past_submissions"
-                submission_histories = json.loads(session.get(submission_link).text)[
-                    "past_submissions"
-                ]
-                active_submission_tz = datetime.fromisoformat(
-                    info["submissions"][0]["datetime"]
-                ).tzinfo
-                for sub_hist_i, sub_hist in enumerate(submission_histories):
-                    if len(print_str) > 0:
-                        print(" " * len(print_str), end="\r", flush=True)
-                    print_str = f"Retrieving download links for user: {info_i + 1}/{len(submission_infos)} sub: {sub_hist_i + 1}/{len(submission_histories)}"
-                    print(print_str, end="\r", flush=True)
-                    if sub_hist_i == 0:
-                        sub_info = info["submissions"][0]
-                    else:
-                        sub_info = {"submission_id": str(sub_hist["id"])}
-                    sub_time = datetime.fromisoformat(
-                        sub_hist["created_at"]
-                    ).astimezone(active_submission_tz)
-                    sub_info["datetime"] = sub_time.isoformat()
-                    sub_info["epochtime_s"] = sub_time.timestamp()
-                    sub_info["gradescope_submission_link"] = (
-                        f"{ASSIGNMENT_ENDPOINT}/submissions/{sub_info['submission_id']}"
-                    )
-
-                    if len(sub_hist["owners"]) == 1:
-                        sub_info["active"] = sub_hist["owners"][0]["active"]
-
-                    try:
-                        sub_info["links"] = get_submission_files(
-                            session, course_id, assignment_id, sub_info["submission_id"]
-                        )
-                        if sub_hist_i > 0:
-                            info["submissions"].append(sub_info)
-                    except Exception as e:
-                        print(f"Exception occured: {e}")
-                        pass
-
-                    # time.sleep(0.1)
-        else:
-            for info_i, info in enumerate(submission_infos):
-                print(
-                    f"Retrieving download links for {info_i + 1}/{len(submission_infos)} user active submission      ",
-                    end="\r",
-                    flush=True,
+            return [
+                self.get_assignment_all_submissions(
+                    course_id, assignment_id, student.email
                 )
-
-                try:
-                    info["submissions"][0]["links"] = get_submission_files(
-                        session,
-                        course_id,
-                        assignment_id,
-                        info["submissions"][0]["submission_id"],
-                    )
-                    info["submissions"][0]["active"] = True
-                except Exception as e:
-                    print(f"Exception occured: {e}")
-                # time.sleep(0.1)
-
-        return submission_infos
+                for student in students
+                if student.email in info_dict
+            ]
+        else:
+            return [
+                self.get_assignment_active_submission(
+                    course_id, assignment_id, student.email
+                )
+                for student in students
+                if student.email in info_dict
+            ]
 
     def get_assignment_submission(
         self, student_email: str, course_id: str, assignment_id: str
@@ -335,6 +269,138 @@ class Account:
             return aws_links
         else:
             raise Exception("No submission found")
+
+    def get_assignment_submission_infos(
+        self, course_id: str, assignment_id: str, force=False
+    ) -> dict[str, Any]:
+        if course_id not in self.assignment_submission_cache:
+            self.assignment_submission_cache[course_id] = {}
+        if assignment_id in self.assignment_submission_cache[course_id] and not force:
+            return self.assignment_submission_cache[course_id][assignment_id]
+
+        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
+        if not course_id or not assignment_id:
+            raise Exception("One or more invalid parameters")
+        session = self.session
+        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
+        submission_tds = submissions_soup.select("td.table--primaryLink")
+        submission_tds_filtered = []
+        submit_id_set = set()
+        for td in submission_tds:
+            tag = td.find("a")
+            if tag is not None:
+                href = tag.attrs.get("href")
+                if href is not None:
+                    td_sub_id = href.split("/")[-1]
+                    if "," not in tag.text and td_sub_id not in submit_id_set:
+                        submit_id_set.add(td_sub_id)
+                        submission_tds_filtered.append(td)
+
+        submissions_tds = [
+            [td] + td.find_next_siblings("td") for td in submission_tds_filtered
+        ]
+        submission_infos = [get_user_submission_info(tds) for tds in submissions_tds]
+        self.assignment_submission_cache[course_id][assignment_id] = {
+            info["email"]: info for info in submission_infos
+        }
+        return self.assignment_submission_cache[course_id][assignment_id]
+
+    def get_assignment_active_submission(
+        self, course_id: str, assignment_id: str, student_email: str
+    ):
+
+        info_dict = self.get_assignment_submission_infos(course_id, assignment_id)
+        if student_email not in info_dict:
+            return None
+        info = info_dict[student_email]
+        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
+        session = self.session
+        check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+
+        submission_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{info['submissions'][0]['submission_id']}.json?content=react&only_keys%5B%5D=past_submissions"
+        submission_histories = json.loads(session.get(submission_link).text)[
+            "past_submissions"
+        ]
+        active_submission = [
+            hist
+            for hist in submission_histories
+            if [owner for owner in hist["owners"] if owner["name"] == info["name"]][0][
+                "active"
+            ]
+        ][0]
+        active_submission_tz = datetime.fromisoformat(
+            info["submissions"][0]["datetime"]
+        ).tzinfo
+        sub_time = datetime.fromisoformat(active_submission["created_at"]).astimezone(
+            active_submission_tz
+        )
+        active_submission["is_active"] = True
+        active_submission["datetime"] = sub_time.isoformat()
+        active_submission["epochtime_s"] = int(sub_time.timestamp())
+        active_submission["gradescope_submission_link"] = (
+            f"{ASSIGNMENT_ENDPOINT}/submissions/{active_submission['id']}"
+        )
+        active_submission["name"] = info["name"]
+        active_submission["email"] = info["email"]
+        del active_submission["show_path"]
+        del active_submission["activate_path"]
+        del active_submission["active"]
+        try:
+            active_submission["links"] = get_submission_files(
+                session, course_id, assignment_id, active_submission["id"]
+            )
+        except Exception as e:
+            print(f"Exception occured: {e}")
+            pass
+        return active_submission
+
+    def get_assignment_all_submissions(
+        self, course_id: str, assignment_id: str, student_email: str
+    ):
+        info_dict = self.get_assignment_submission_infos(course_id, assignment_id)
+        if student_email not in info_dict:
+            return None
+        info = info_dict[student_email]
+        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
+        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
+        session = self.session
+        check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
+
+        submission_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{info['submissions'][0]['submission_id']}.json?content=react&only_keys%5B%5D=past_submissions"
+        submission_histories = json.loads(session.get(submission_link).text)[
+            "past_submissions"
+        ]
+        submission_tz = datetime.fromisoformat(
+            info["submissions"][0]["datetime"]
+        ).tzinfo
+        for submission in submission_histories:
+            sub_time = datetime.fromisoformat(submission["created_at"]).astimezone(
+                submission_tz
+            )
+            submission["datetime"] = sub_time.isoformat()
+            submission["epochtime_s"] = sub_time.timestamp()
+            submission["gradescope_submission_link"] = (
+                f"{ASSIGNMENT_ENDPOINT}/submissions/{submission['id']}"
+            )
+            submission["name"] = info["name"]
+            submission["email"] = info["email"]
+            submission["is_active"] = [
+                owner for owner in submission["owners"] if owner["name"] == info["name"]
+            ][0]["active"]
+            del submission["show_path"]
+            del submission["activate_path"]
+            del submission["active"]
+            try:
+                submission["links"] = get_submission_files(
+                    session, course_id, assignment_id, submission["id"]
+                )
+            except Exception as e:
+                print(f"Exception occured: {e}")
+                pass
+        return submission_histories
 
     def get_assignment_graders(self, course_id: str, question_id: str) -> set[str]:
         """
