@@ -1,4 +1,3 @@
-from math import trunc
 import time
 
 from bs4 import BeautifulSoup
@@ -9,7 +8,6 @@ from gradescopeapi.classes._helpers._assignment_helpers import (
     get_assignments_instructor_view,
     get_assignments_student_view,
     get_submission_files,
-    get_user_submission_info,
 )
 from gradescopeapi.classes._helpers._course_helpers import (
     get_course_members,
@@ -17,8 +15,8 @@ from gradescopeapi.classes._helpers._course_helpers import (
 )
 from gradescopeapi.classes.assignments import Assignment
 from gradescopeapi.classes.member import Member
-import json
-from datetime import datetime
+from gradescopeapi.classes._helpers._assignment_helpers import NotAuthorized
+from gradescopeapi.classes.courses import Course
 
 
 class Account:
@@ -30,7 +28,7 @@ class Account:
         self.session = session
         self.gradescope_base_url = gradescope_base_url
 
-    def get_courses(self) -> dict:
+    def get_courses(self) -> dict[str, dict[str, Course]]:
         """
         Get all courses for the user, including both instructor and student courses
 
@@ -61,34 +59,13 @@ class Account:
 
         if response.status_code != 200:
             raise RuntimeError(
-                "Failed to access account page on Gradescope. Status code: {response.status_code}"
+                f"Failed to access account page on Gradescope. Status code: {response.status_code}"
             )
 
         soup = BeautifulSoup(response.text, "html.parser")
 
         # see if user is solely a student or instructor
-        user_courses, is_instructor = get_courses_info(soup, "Your Courses")
-
-        # if the user is indeed solely a student or instructor
-        # return the appropriate set of courses
-        if user_courses:
-            if is_instructor:
-                return {"instructor": user_courses, "student": {}}
-            else:
-                return {"instructor": {}, "student": user_courses}
-
-        # if user is both a student and instructor, get both sets of courses
-        courses = {"instructor": {}, "student": {}}
-
-        # get instructor courses
-        instructor_courses, _ = get_courses_info(soup, "Instructor Courses")
-        courses["instructor"] = instructor_courses
-
-        # get student courses
-        student_courses, _ = get_courses_info(soup, "Student Courses")
-        courses["student"] = student_courses
-
-        return courses
+        return get_courses_info(soup)
 
     def get_course_users(self, course_id: str) -> list[Member]:
         """
@@ -121,7 +98,7 @@ class Account:
 
             return users
         except Exception:
-            return []
+            return None
 
     def get_assignments(self, course_id: str) -> list[Assignment]:
         """
@@ -134,13 +111,22 @@ class Account:
             "You are not authorized to access this page.": if logged in user is unable to access submissions
             "You must be logged in to access this page.": if no user is logged in
         """
-        course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
         # check that course_id is valid (not empty)
         if not course_id:
             raise Exception("Invalid Course ID")
         session = self.session
+
         # scrape page
-        coursepage_resp = check_page_auth(session, course_endpoint)
+        try:
+            # this endpoint is only available if the user is a staff of the course
+            course_endpoint = (
+                f"{self.gradescope_base_url}/courses/{course_id}/assignments"
+            )
+            coursepage_resp = check_page_auth(session, course_endpoint)
+        except NotAuthorized:
+            # fall back to default course page if the user is a student
+            course_endpoint = f"{self.gradescope_base_url}/courses/{course_id}"
+            coursepage_resp = check_page_auth(session, course_endpoint)
         coursepage_soup = BeautifulSoup(coursepage_resp.text, "html.parser")
 
         # two different helper functions to parse assignment info
@@ -201,99 +187,6 @@ class Account:
             # sleep for 0.1 seconds to avoid sending too many requests to gradescope
             time.sleep(0.1)
         return submission_links
-
-    def get_assignment_submissions_for_each_users(
-        self, course_id: str, assignment_id: str, get_past_submissions: bool = False
-    ):
-        ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
-        ASSIGNMENT_SUBMISSIONS_ENDPOINT = f"{ASSIGNMENT_ENDPOINT}/review_grades"
-        if not course_id or not assignment_id:
-            raise Exception("One or more invalid parameters")
-        session = self.session
-        submissions_resp = check_page_auth(session, ASSIGNMENT_SUBMISSIONS_ENDPOINT)
-        submissions_soup = BeautifulSoup(submissions_resp.text, "html.parser")
-        submission_tds = submissions_soup.select("td.table--primaryLink")
-        submission_tds_filtered = []
-        submit_id_set = set()
-        for td in submission_tds:
-            tag = td.find("a")
-            if tag is not None:
-                href = tag.attrs.get("href")
-                if href is not None:
-                    td_sub_id = href.split("/")[-1]
-                    if "," not in tag.text and td_sub_id not in submit_id_set:
-                        submit_id_set.add(td_sub_id)
-                        submission_tds_filtered.append(td)
-
-        submissions_tds = [
-            [td] + td.find_next_siblings("td") for td in submission_tds_filtered
-        ]
-        submission_infos = [get_user_submission_info(tds) for tds in submissions_tds]
-        print_str = ""
-        if get_past_submissions:
-            for info_i, info in enumerate(submission_infos):
-                ASSIGNMENT_ENDPOINT = f"{self.gradescope_base_url}/courses/{course_id}/assignments/{assignment_id}"
-
-                submission_link = f"{ASSIGNMENT_ENDPOINT}/submissions/{info['submissions'][0]['submission_id']}.json?content=react&only_keys%5B%5D=past_submissions"
-                submission_histories = json.loads(session.get(submission_link).text)[
-                    "past_submissions"
-                ]
-                active_submission_tz = datetime.fromisoformat(
-                    info["submissions"][0]["datetime"]
-                ).tzinfo
-                for sub_hist_i, sub_hist in enumerate(submission_histories):
-                    if len(print_str) > 0:
-                        print(" " * len(print_str), end="\r", flush=True)
-                    print_str = f"Retrieving download links for user: {info_i + 1}/{len(submission_infos)} sub: {sub_hist_i + 1}/{len(submission_histories)}"
-                    print(print_str, end="\r", flush=True)
-                    if sub_hist_i == 0:
-                        sub_info = info["submissions"][0]
-                    else:
-                        sub_info = {"submission_id": str(sub_hist["id"])}
-                    sub_time = datetime.fromisoformat(
-                        sub_hist["created_at"]
-                    ).astimezone(active_submission_tz)
-                    sub_info["datetime"] = sub_time.isoformat()
-                    sub_info["epochtime_s"] = sub_time.timestamp()
-                    sub_info["gradescope_submission_link"] = (
-                        f"{ASSIGNMENT_ENDPOINT}/submissions/{sub_info['submission_id']}"
-                    )
-
-                    if len(sub_hist["owners"]) == 1:
-                        sub_info["active"] = sub_hist["owners"][0]["active"]
-
-                    try:
-                        sub_info["links"] = get_submission_files(
-                            session, course_id, assignment_id, sub_info["submission_id"]
-                        )
-                        if sub_hist_i > 0:
-                            info["submissions"].append(sub_info)
-                    except Exception as e:
-                        print(f"Exception occured: {e}")
-                        pass
-
-                    # time.sleep(0.1)
-        else:
-            for info_i, info in enumerate(submission_infos):
-                print(
-                    f"Retrieving download links for {info_i + 1}/{len(submission_infos)} user active submission      ",
-                    end="\r",
-                    flush=True,
-                )
-
-                try:
-                    info["submissions"][0]["links"] = get_submission_files(
-                        session,
-                        course_id,
-                        assignment_id,
-                        info["submissions"][0]["submission_id"],
-                    )
-                    info["submissions"][0]["active"] = True
-                except Exception as e:
-                    print(f"Exception occured: {e}")
-                # time.sleep(0.1)
-
-        return submission_infos
 
     def get_assignment_submission(
         self, student_email: str, course_id: str, assignment_id: str

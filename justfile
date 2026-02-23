@@ -39,3 +39,8 @@ _export-requirements:
     uv export --output-file requirements.txt --no-dev --locked --quiet
 _export-requirements-dev:
     uv export --output-file requirements.dev.txt --only-dev --locked --quiet
+
+# Upgrade dependencies
+upgrade: _upgrade-uv export
+_upgrade-uv:
+    uv lock --upgrade
