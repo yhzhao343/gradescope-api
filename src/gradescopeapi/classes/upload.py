@@ -17,6 +17,7 @@ def upload_assignment(
     assignment_id: str,
     *files: io.TextIOWrapper,
     leaderboard_name: str | None = None,
+    owner_id: str | None = None,
     gradescope_base_url: str = DEFAULT_GRADESCOPE_BASE_URL,
 ) -> str | None:
     """Uploads given file objects to the specified assignment on Gradescope.
@@ -63,6 +64,9 @@ def upload_assignment(
     ]
     if leaderboard_name is not None:
         fields.append(("submission[leaderboard_name]", leaderboard_name))
+
+    if owner_id is not None:
+        fields.append(("submission[owner_id]", owner_id))
 
     multipart = MultipartEncoder(fields=fields)
 
